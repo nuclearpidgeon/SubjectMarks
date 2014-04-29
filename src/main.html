@@ -10,25 +10,42 @@
     <script src="js/jquery.flot.pie.js"></script>
     <script src="js/bootstrap.js"></script>
     <script>
-        $(function() {
-            //$.plot($("#pieChart"),[ [[0, 0], [1, 1]] ], { yaxis: { max: 1 } });
-            var data = [
-                { label: "Assignment #1",  data: 15, color: "red"},
-                { label: "Assignment #2",  data: 15, color: "green"},
-                { label: "Mid-semester Test",  data: 10, color: "blue"},
-                { label: "Exam",  data: 60, color: "purple"}
-            ];
-            $.plot('#pieChart', data, {
-                series: {
-                    pie: {
-                        show: true
-                    }
-                },
-                legend: {
-                    show: false
-                }
-            });
+    $(function() {
+        $("button#addAssessment").click(function (evt) {
+            var newName = $('input#newAssessmentName').val();
+            var newAssessment = $('<div class="list-group-item"><h3>'+newName+'</h3></div>');
+            $(newAssessment).append('<div class="progress"><div class="progress-bar" style="width: 15%"><span class="sr-only">Subject Mark: 15/100</span><span>15/100</span></div></div>')
+            $("#assessmentList").append(newAssessment.hide().fadeIn(500));
         });
+        //$.plot($("#pieChart"),[ [[0, 0], [1, 1]] ], { yaxis: { max: 1 } });
+        var data = [{
+            label: "Assignment #1",
+            data: 15,
+            color: "red"
+        }, {
+            label: "Assignment #2",
+            data: 15,
+            color: "green"
+        }, {
+            label: "Mid-semester Test",
+            data: 10,
+            color: "blue"
+        }, {
+            label: "Exam",
+            data: 60,
+            color: "purple"
+        }];
+        $.plot('#pieChart', data, {
+            series: {
+                pie: {
+                    show: true
+                }
+            },
+            legend: {
+                show: false
+            }
+        });
+    });
     </script>
 </head>
 
@@ -42,29 +59,46 @@
             <div class="panel-body">
                 <div class="row">
                     <div class="col-md-6">
-                        <div class="">
-                            <h3>An assessment item</h3>
-                            <div class="progress">
-                                <div class="progress-bar" style="width: 15%">
-                                    <span class="sr-only">Subject Mark: 15/100</span>
-                                    <span>15/100</span>
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <p class="panel-title">Assessment Items</p>
+                            </div>
+                            <div class="panel-body">
+                                <div class="list-group" id="assessmentList">
+                                    <div class="list-group-item">
+                                        <h3>An assessment item</h3>
+                                        <div class="progress">
+                                            <div class="progress-bar" style="width: 15%">
+                                                <span class="sr-only">Subject Mark: 15/100</span>
+                                                <span>15/100</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="list-group-item">
+                                        <h3>Another assessment item</h3>
+                                        <div class="progress">
+                                            <div class="progress-bar" style="width: 15%">
+                                                <span class="sr-only">Subject Mark: 15/100</span>
+                                                <span>15/100</span>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="well">
-                            <h3>Another assessment item</h3>
-                            <div class="progress">
-                                <div class="progress-bar" style="width: 15%">
-                                    <span class="sr-only">Subject Mark: 15/100</span>
-                                    <span>15/100</span>
+                            <div class="panel-footer clearfix">
+                                <div class="form-group">
+                                    <label for="newAssessmentName">Assessment name</label>
+                                    <input type="text" class="form-control" id="newAssessmentName" placeholder="e.g. Mid-Semester Test">
                                 </div>
+                                <button class="btn btn-block btn-default" id="addAssessment">Add Assessment
+                                    <span class="glyphicon glyphicon-plus"></span>
+                                </button>
                             </div>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="panel panel-default">
                             <div class="panel-body">
-                                <p>Text</p>
                                 <div id="pieChart" style="width:100%;height:300px"></div>
                             </div>
                         </div>
