@@ -1,4 +1,4 @@
 SubjectMarks
 ============
 
-UoM mark distribution visualiser
+HTML-based subject results distribution visualiser
