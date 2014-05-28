@@ -17,6 +17,17 @@ Assessment.prototype.toHTML = function() {
     return html;
 };
 
+Assessment.prototype.toFlotData = function() {
+    return {
+        label: this.assName,
+        data: this.percentage
+    };
+};
+
+var assessments = []; // global list of all assessments
+
+var chartData = [];
+
 var getNewAssessment = function() {
     var nameInput = $('input#newAssessmentName');
     var newName = nameInput.val();
@@ -26,32 +37,39 @@ var getNewAssessment = function() {
     var newScore = parseFloat(scoreInput.val()); //may need to change this
     scoreInput.val('');
 
-    var scoreMaxInput = $('input#newAssessmentScoreMax');
-    var newScoreMax = parseFloat(scoreMaxInput.val()); //may need to change this too
-    scoreMaxInput.val('');
+    var totalInput = $('input#newAssessmentScoreMax');
+    var newTotal = parseFloat(totalInput.val()); //may need to change this too
+    totalInput.val('');
 
-    // console.log("scoreMax type: "+typeof(newScoreMax));
-    var percentage = (newScore/newScoreMax)*100;
-    var newAssessment = $('<div class="list-group-item"><h3>' + newName + '</h3></div>');
-    //using \ to escape newlines and keep this readable
-    $(newAssessment).append('<div class="progress"> \
-        <div class="progress-bar" style="width: '+percentage+'%"> \
-            <span class="sr-only">Subject Mark: '+newScore+'/'+newScoreMax+'</span> \
-            <span>'+newScore+'/'+newScoreMax+'</span> \
-        </div> \
-    </div>');
+    var newAssessment = new Assessment(newName,newScore,newTotal);
     return newAssessment;
-}
+};
 
 var addAssessment = function() {
-    $("#emptyAlert").remove()
-    $("#assessmentList").append(getNewAssessment().hide().fadeIn(500));
-
-}
+    var newAssessment = getNewAssessment();
+    assessments.push(newAssessment);
+    chartData.push(newAssessment.toFlotData());
+    $("#emptyAlert").remove();
+    $("#assessmentList").append(newAssessment.toHTML().hide().fadeIn(500));
+    plotChart();
+};
 
 var loadNoAssessments = function() {
-    $("#assessmentList").empty().append('<div class="alert alert-warning" id="emptyAlert">No assessments added yet!</div>')
-}
+    $("#assessmentList").empty().append('<div class="alert alert-warning" id="emptyAlert">No assessments added yet!</div>');
+};
+
+var plotChart = function() {
+    $.plot('#pieChart', chartData, {
+        series: {
+            pie: {
+                show: true
+            }
+        },
+        legend: {
+            show: false
+        }
+    });
+};
 
 //document ready
 $(function() {
@@ -65,7 +83,7 @@ $(function() {
     if ( typeof assessmentdata == 'undefined' ) {
         // no data
         loadNoAssessments();
-    } else if ( assessmentdata.length == 0 ) {
+    } else if ( assessmentdata.length === 0 ) {
         // blank list
         loadNoAssessments();
     } else if ( assessmentdata.length > 0 ) {
@@ -74,32 +92,18 @@ $(function() {
         //some error
     }
     
-    // dummy data for 
-    var data = [{
-        label: "Assignment #1",
-        data: 15,
-        color: "red"
-    }, {
-        label: "Assignment #2",
-        data: 15,
-        color: "green"
-    }, {
-        label: "Mid-semester Test",
-        data: 10,
-        color: "blue"
-    }, {
-        label: "Exam",
-        data: 60,
-        color: "purple"
-    }];
-        $.plot('#pieChart', data, {
-        series: {
-            pie: {
-                show: true
-            }
-        },
-        legend: {
-            show: false
-        }
-    });
+    // dummy data for flot
+    // var data = [{
+    //     label: "Assignment #1",
+    //     data: 15
+    // }, {
+    //     label: "Assignment #2",
+    //     data: 15
+    // }, {
+    //     label: "Mid-semester Test",
+    //     data: 10
+    // }, {
+    //     label: "Exam",
+    //     data: 60
+    // }];
 });
