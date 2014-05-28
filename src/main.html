@@ -4,6 +4,7 @@
 <head>
     <link rel="stylesheet" href="css/bootstrap.css">
     <link rel="stylesheet" href="css/bootstrap-theme.css">
+    <link rel="stylesheet" href="css/main.css">
 
     <script src="js/jquery.js"></script>
     <script src="js/jquery.flot.js"></script>
@@ -13,76 +14,85 @@
 </head>
 
 <body>
-    <div class="container">
-        <h1>Marks Overview</h1>
-        <div class="panel panel-default">
-            <div class="panel-heading">
-                <div class="panel-title">A Subject</div>
+    <!-- <header>
+        <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="#">Brand</a>
+                </div>
+                <div class="collapse navbar-collapse">
+
+                </div>
             </div>
-            <div class="panel-body">
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
-                                <p class="panel-title">Assessment Items</p>
-                            </div>
-                            <div class="panel-body">
-                                <div class="list-group" id="assessmentList">
-                                    <div class="list-group-item">
-                                        <h3>An assessment item</h3>
-                                        <div class="progress">
-                                            <div class="progress-bar" style="width: 15%">
-                                                <span class="sr-only">Subject Mark: 15/100</span>
-                                                <span>15/100</span>
+        </nav>
+    </header> -->
+    <main>
+        <div class="container">
+            <h1>SubjectMarks</h1>
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <div class="panel-title">A Subject</div>
+                </div>
+                <div class="panel-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    <p class="panel-title">Assessment Items</p>
+                                </div>
+                                <div class="panel-body">
+                                    <div class="list-group" id="assessmentList">
+
+                                    </div>
+                                </div>
+                                <div class="panel-footer clearfix">
+                                    <div class="form-group">
+                                        <label for="newAssessmentName">Assessment name</label>
+                                        <input type="text" class="form-control" id="newAssessmentName" placeholder="e.g. Mid-Semester Test">
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-sm-6">
+                                            <div class="form-group">
+                                                <label for="newAssessmentScore">Assessment score</label>
+                                                <input type="number" class="form-control" id="newAssessmentScore">
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-6">
+                                            <div class="form-group">
+                                                <label for="newAssessmentScoreMax">Assessment score max</label>
+                                                <input type="number" class="form-control" id="newAssessmentScoreMax">
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="list-group-item">
-                                        <h3>Another assessment item</h3>
-                                        <div class="progress">
-                                            <div class="progress-bar" style="width: 15%">
-                                                <span class="sr-only">Subject Mark: 15/100</span>
-                                                <span>15/100</span>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    <button class="btn btn-block btn-default" id="addAssessment">Add Assessment
+                                        <span class="glyphicon glyphicon-plus"></span>
+                                    </button>
                                 </div>
-                            </div>
-                            <div class="panel-footer clearfix">
-                                <div class="form-group">
-                                    <label for="newAssessmentName">Assessment name</label>
-                                    <input type="text" class="form-control" id="newAssessmentName" placeholder="e.g. Mid-Semester Test">
-                                </div>
-                                <div class="form-group">
-                                    <label for="newAssessmentScore">Assessment score</label>
-                                    <input type="number" class="form-control" id="newAssessmentScore">
-                                </div>
-                                <div class="form-group">
-                                    <label for="newAssessmentScoreMax">Assessment score max</label>
-                                    <input type="number" class="form-control" id="newAssessmentScoreMax">
-                                </div>
-                                <button class="btn btn-block btn-default" id="addAssessment">Add Assessment
-                                    <span class="glyphicon glyphicon-plus"></span>
-                                </button>
                             </div>
                         </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="panel panel-default">
-                            <div class="panel-body">
-                                <div id="pieChart" style="width:100%;height:300px"></div>
+                        <div class="col-md-6">
+                            <div class="panel panel-default">
+                                <div class="panel-body">
+                                    <div id="pieChart" style="width:100%;height:300px"></div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-        <div class="panel panel-default">
-            <div class="panel-heading">
-                <div class="panel-title">Another Subject</div>
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <div class="panel-title">Another Subject</div>
+                </div>
             </div>
         </div>
-    </div>
+    </main>
 </body>
 
 </html>
