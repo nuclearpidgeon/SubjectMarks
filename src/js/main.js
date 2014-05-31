@@ -1,14 +1,24 @@
 // Assessment class
-function Assessment(assName, score, total, weighting) {
+function Assessment(assName, score, total, weighting, graded) {
     this.assName = assName;
     this.score = score;
     this.total = total;
     this.weighting = weighting;
-    this.percentage = (this.score/this.total)*100;
+    this.graded = graded;
+    this.percentage = Math.round((this.score/this.total)*100);
 }
 
 Assessment.prototype.toHTML = function() {
-    var html = $('<div class="list-group-item"><a class="badge">&times;</a><h3 class="list-group-item-heading">'+this.assName+' <small>'+this.weighting+'% weight</small></h3></div>');
+    //<a class="badge">&times;</a>
+    var html = $('<div class="list-group-item"></div>');
+    html.append('<h3 class="list-group-item-heading">'+this.assName+' <small>'+this.weighting+'% weight</small></h3>');
+    if (this.graded) {
+        html.addClass("list-group-item-dull");
+        html.append("<small>Graded</small>");
+    } else {
+        //html.addClass("list-group-item-info");
+        html.append("<small>Not yet graded</small>");
+    }
     $(html).append('<div class="progress"> \
         <div class="progress-bar" style="width: '+this.percentage+'%"> \
             <span class="sr-only">Subject Mark: '+this.score+'/'+this.total+'</span> \
@@ -68,12 +78,17 @@ var getNewAssessment = function() {
 
     var scoreInput = $('input#newAssessmentScore');
     var newScore = parseFloat(scoreInput.val()); //may need to change this
-    if (isNaN(newScore)) {
-        //invalid input
+    var newGraded=true;
+    if (isNaN(newScore)&&(scoreInput.val()!=="")) {
+        //invalid input (blank is valid for this field)
         errors=true;
         errorlist.push("Please enter a valid assessment score");
         scoreInput.parent().addClass("has-error");
     } else {
+        if (scoreInput.val()==="") {
+            newGraded=false;
+            newScore=0; //Could maybe instead set to 50%?
+        }
         scoreInput.parent().removeClass("has-error");
     }
 
@@ -86,6 +101,12 @@ var getNewAssessment = function() {
         totalInput.parent().addClass("has-error");
     } else {
         totalInput.parent().removeClass("has-error");
+    }
+
+    //extra error-check case
+    if (newTotal<newScore) {
+        errors=true;
+        errorlist.push("You can't have a score greater than the total");
     }
 
     var weightingInput = $('input#newAssessmentWeighting');
@@ -104,7 +125,7 @@ var getNewAssessment = function() {
         updateErrorList(errorlist);
         return null;
     } else {
-        var newAssessment = new Assessment(newName,newScore,newTotal,newWeighting);
+        var newAssessment = new Assessment(newName,newScore,newTotal,newWeighting,newGraded);
         nameInput.val('');
         scoreInput.val('');
         totalInput.val('');
@@ -118,9 +139,10 @@ var addAssessment = function() {
     var newAssessment = getNewAssessment();
     if (newAssessment!==null) {
         assessments.push(newAssessment);
-        chartData.push(newAssessment.toFlotData());
+        addChartData(newAssessment.toFlotData());
         $("#assessmentList").append(newAssessment.toHTML().hide().fadeIn(500));
         plotChart();
+        updateOverview();
     }
 };
 
@@ -132,10 +154,26 @@ var addChartData = function(newData) {
     chartData.push(newData);
     var arrlen = chartData.length;
     var total = 0;
-    for (var i = 0;i<arrlen;i++) {
+    for (var i = 1;i<arrlen;i++) {
         total += chartData[i].data;
     }
     chartPadding.data = 100-total;
+};
+
+var updateOverview = function() {
+    var earnt=0;
+    var lost=0;
+    var numOfAssessments = assessments.length;
+    if (assessments.length) {
+        for (var i=0;i<numOfAssessments;i++) {
+            earnt+=assessments[i].percentage*assessments[i].weighting/100;
+            lost+=(100-assessments[i].percentage)*assessments[i].weighting/100;
+        }
+    }
+    $('#overviewEarnt').text(earnt.toString()+"% earnt").css("width",earnt.toString()+"%");
+    $('#overviewPending').text((100-earnt-lost).toString()+"% pending").css("width",(100-earnt-lost).toString()+"%");
+    $('#overviewLost').text(lost.toString()+"% lost").css("width",lost.toString()+"%");
+    return (100-earnt-lost).toString();
 };
 
 var plotChart = function() {

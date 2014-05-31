@@ -61,20 +61,19 @@
                                         </div>
                                     </div>
                                     <div class="row">
-                                        <div class="col-sm-6">
+                                        <div class="col-sm-3">
                                             <div class="form-group">
                                                 <label class="control-label" for="newAssessmentScore">Your result</label>
-                                                <input type="number" class="form-control" id="newAssessmentScore" placeholder="Leave blank if not yet graded">
+                                                <input type="number" class="form-control" id="newAssessmentScore" placeholder="e.g. 15">
+                                                <p class="help-block">Leave blank if not yet graded</p>
                                             </div>
                                         </div>
-                                        <div class="col-sm-6">
+                                        <div class="col-sm-3">
                                             <div class="form-group">
                                                 <label class="control-label" for="newAssessmentScoreMax">Total</label>
                                                 <input type="number" class="form-control" id="newAssessmentScoreMax" placeholder="e.g. 20">
                                             </div>
                                         </div>
-                                    </div>
-                                    <div class="row">
                                         <div class="col-sm-6">
                                             <div class="form-group">
                                                 <label class="control-label" for="newAssessmentWeighting">Weighting</label>
@@ -99,20 +98,18 @@
                                 </div>
                                 <div class="panel-body">
                                     <div id="subjectOverview">
-                                        <div class="list-group" id="assessmentList">
-                                            <div class="progress" style="margin-bottom:0px">
-                                                <div class="progress-bar progress-bar-success" style="width:20%">20% Earnt</div>
-                                                <div class="progress-bar progress-bar-warning" style="width:60%">60% Pending</div>
-                                                <div class="progress-bar progress-bar-danger" style="width:20%">20% Lost</div>
-                                            </div>
-                                            <div>
-                                                <small class="pull-left">
-                                                    0%
-                                                </small>
-                                                <small class="pull-right">
-                                                    100%
-                                                </small>
-                                            </div>
+                                        <div class="progress" style="margin-bottom:0px">
+                                            <div class="progress-bar progress-bar-success" id="overviewEarnt" style="width:0%">0% Earnt</div>
+                                            <div class="progress-bar progress-bar-warning" id="overviewPending" style="width:100%">100% Pending</div>
+                                            <div class="progress-bar progress-bar-danger" id="overviewLost" style="width:0%">0% Lost</div>
+                                        </div>
+                                        <div>
+                                            <small class="pull-left">
+                                                0%
+                                            </small>
+                                            <small class="pull-right">
+                                                100%
+                                            </small>
                                         </div>
                                     </div>
                                 </div>
@@ -124,11 +121,6 @@
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
-            <div class="panel panel-default">
-                <div class="panel-heading">
-                    <div class="panel-title">Another Subject</div>
                 </div>
             </div>
         </div>
