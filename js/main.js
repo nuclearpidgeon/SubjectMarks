@@ -19,12 +19,14 @@ Assessment.prototype.toHTML = function() {
         //html.addClass("list-group-item-info");
         html.append("<small>Not yet graded</small>");
     }
-    $(html).append('<div class="progress"> \
-        <div class="progress-bar" style="width: '+this.percentage+'%"> \
+    if (this.graded) {
+        $(html).append('<div class="progress"><div class="progress-bar" style="width: '+this.percentage+'%"> \
             <span class="sr-only">Subject Mark: '+this.score+'/'+this.total+'</span> \
-            <span>'+this.score+'/'+this.total+'</span> \
-        </div> \
-    </div>');
+            <span>'+this.score+'/'+this.total+'</span></div></div>');
+    } else {
+        var slider = $('<div class="sliderSpacer"><input class="slider"></input></div>');
+        $(html).append(slider);
+    }
     return html;
 };
 
@@ -140,7 +142,10 @@ var addAssessment = function() {
     if (newAssessment!==null) {
         assessments.push(newAssessment);
         addChartData(newAssessment.toFlotData());
-        $("#assessmentList").append(newAssessment.toHTML().hide().fadeIn(500));
+        var newPageAssessment = $("#assessmentList").append(newAssessment.toHTML().hide().fadeIn(500));
+        if (!newAssessment.graded) {
+            newPageAssessment.find('input.slider').slider();
+        }
         plotChart();
         updateOverview();
     }

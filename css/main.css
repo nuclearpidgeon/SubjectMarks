@@ -7,3 +7,15 @@
 .list-group-item-dull {
 	background-color: #f5f5f5;
 }
+
+#assessmentList .slider {
+	width: 100%;
+}
+
+#assessmentList .progress {
+	margin: 10px 0px;
+}
+
+.sliderSpacer {
+	margin: 10px 0px;
+}
