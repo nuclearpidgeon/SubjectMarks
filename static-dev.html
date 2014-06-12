@@ -44,24 +44,68 @@
                                 </div>
                                 <div class="panel-body" id="assessmentPanelBody">
                                     <div class="list-group" id="assessmentList">
-                                        <!-- ko if: assessments().length == 0 -->
-                                        <div class="alert alert-warning" id="emptyAlert">No assessments added yet!</div>
-                                        <!-- /ko -->
-                                        <!-- ko foreach: assessments -->
-                                        <div class="list-group-item list-group-item-dull">
+                                        <div class="list-group-item list-group-item-dull" style="display: block;">
                                             <div class="btn btn-default btn-sm" style="float:right" id="editAssessment">Edit</div>
-                                            <h3 class="list-group-item-heading"><!-- ko text: assName --><!-- /ko -->
-                                                <small data-bind="text: niceWeighting"></small>
+                                            <h3 class="list-group-item-heading">DAS
+                                                <small>50% weight</small>
                                             </h3>
                                             <small>Graded</small>
                                             <div class="progress">
-                                                <div class="progress-bar" data-bind="style: { width: percentage() + '%' }">
+                                                <div class="progress-bar" style="width: 83%">
                                                     <span class="sr-only">Subject Mark: 100/120</span>
-                                                    <span><!-- ko text: score --><!-- /ko -->/<!-- ko text: total --><!-- /ko --></span>
+                                                    <span>100/120</span>
                                                 </div>
                                             </div>
                                         </div>
-                                        <!-- /ko -->
+                                        <div class="list-group-item list-group-item-darkgrey" style="display: block;">
+                                            <div class="row">
+                                                    <div class="col-sm-12">
+                                                        <div class="form-group">
+                                                            <label class="control-label">Name</label>
+                                                            <input class="form-control" value="EDIT MODE" type="text">
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-sm-4">
+                                                        <div class="form-group">
+                                                            <label class="control-label">Score</label>
+                                                            <input class="form-control" value="10" type="number">
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-sm-4">
+                                                        <div class="form-group">
+                                                            <label class="control-label">Total</label>
+                                                            <input class="form-control" value="20" type="number">
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-sm-4">
+                                                        <div class="form-group">
+                                                            <label class="control-label">Weight</label>
+                                                            <input class="form-control" value="20" type="number">
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-sm-12 form-group clearfix">
+                                                        <div class="pull-left">
+                                                            <button class="btn btn-danger">Cancel</button>
+                                                        </div>
+                                                        <div class="pull-right">
+                                                            <button class="btn btn-success">Save</button>
+                                                        </div>
+                                                    </div>
+                                            </div>
+                                        </div>
+                                        <div class="list-group-item list-group-item-dull" style="display: block;">
+                                            <div class="btn btn-default btn-sm" style="float:right" id="editAssessment">Edit</div>
+                                            <h3 class="list-group-item-heading">Long Assessment Name
+                                                <small>50% weight</small>
+                                            </h3>
+                                            <small>Graded</small>
+                                            <div class="progress">
+                                                <div class="progress-bar" style="width: 83%">
+                                                    <span class="sr-only">Subject Mark: 100/120</span>
+                                                    <span>100/120</span>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="panel-footer clearfix" id="assessmentPanelFooter">
@@ -99,37 +143,8 @@
                                         </div>
                                     </div>
                                     <button class="btn btn-block btn-default" id="addAssessment">Add Assessment
-                                        <span class="glyphicon glyphicon-plus"> </span>
+                                        <span class="glyphicon glyphicon-plus"></span>
                                     </button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="panel panel-default">
-                                <div class="panel-heading">
-                                    <div class="panel-title">Subject Overview</div>
-                                </div>
-                                <div class="panel-body">
-                                    <div id="subjectOverview">
-                                        <div class="progress" style="margin-bottom:0px">
-                                            <div class="progress-bar progress-bar-success" id="overviewEarnt" style="width:0%">0% Earnt</div>
-                                            <div class="progress-bar progress-bar-warning" id="overviewPending" style="width:100%">100% Pending</div>
-                                            <div class="progress-bar progress-bar-danger" id="overviewLost" style="width:0%">0% Lost</div>
-                                        </div>
-                                        <div>
-                                            <small class="pull-left">
-                                                0%
-                                            </small>
-                                            <small class="pull-right">
-                                                100%
-                                            </small>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="panel panel-default">
-                                <div class="panel-body">
-                                    <div id="pieChart" style="width:100%;height:300px"></div>
                                 </div>
                             </div>
                         </div>
@@ -140,12 +155,9 @@
     </main>
 
     <script type="text/javascript" src="js/jquery.js"></script>
-    <script type="text/javascript" src="js/jquery.flot.js"></script>
-    <script type="text/javascript" src="js/jquery.flot.pie.js"></script>
     <script type="text/javascript" src="js/bootstrap.js"></script>
     <script type="text/javascript" src="js/bootstrap-slider.js"></script>
     <script type="text/javascript" src="js/knockout.js"></script>
-    <script type="text/javascript" src="js/main.js"></script>
 
 </body>
 

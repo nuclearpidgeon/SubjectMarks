@@ -8,6 +8,10 @@
 	background-color: #f5f5f5;
 }
 
+.list-group-item-darkgrey {
+	background-color: #CCC;
+}
+
 #assessmentList .slider {
 	width: 100%;
 }

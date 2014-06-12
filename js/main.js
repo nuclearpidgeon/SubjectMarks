@@ -1,34 +1,23 @@
+// Assessment List class
+function AssessmentList() {
+    this.assessments = ko.observableArray();
+}
 // Assessment class
 function Assessment(assName, score, total, weighting, graded) {
-    this.assName = assName;
-    this.score = score;
-    this.total = total;
-    this.weighting = weighting;
-    this.graded = graded;
-    this.percentage = Math.round((this.score/this.total)*100);
-}
+    var self = this;
+    self.assName = ko.observable(assName);
+    self.score = ko.observable(score);
+    self.total = ko.observable(total);
+    self.weighting = ko.observable(weighting);
+    self.graded = ko.observable(graded);
 
-Assessment.prototype.toHTML = function() {
-    //<a class="badge">&times;</a>
-    var html = $('<div class="list-group-item"></div>');
-    html.append('<h3 class="list-group-item-heading">'+this.assName+' <small>'+this.weighting+'% weight</small></h3>');
-    if (this.graded) {
-        html.addClass("list-group-item-dull");
-        html.append("<small>Graded</small>");
-    } else {
-        //html.addClass("list-group-item-info");
-        html.append("<small>Not yet graded</small>");
-    }
-    if (this.graded) {
-        $(html).append('<div class="progress"><div class="progress-bar" style="width: '+this.percentage+'%"> \
-            <span class="sr-only">Subject Mark: '+this.score+'/'+this.total+'</span> \
-            <span>'+this.score+'/'+this.total+'</span></div></div>');
-    } else {
-        var slider = $('<div class="sliderSpacer"><input class="slider"></input></div>');
-        $(html).append(slider);
-    }
-    return html;
-};
+    self.niceWeighting = ko.computed(function() {
+        return self.weighting().toString() + "% weight";
+    });
+    self.percentage = ko.computed(function() {
+        return Math.round((self.score()/self.total())*100);
+    });
+}
 
 Assessment.prototype.toFlotData = function() {
     return {
@@ -41,7 +30,7 @@ Assessment.prototype.remove = function() {
     assessments.remove(this);
 };
 
-var assessments = []; // global list of all assessments
+var assessments = ko.observableArray([]); // global list of all assessments
 
 var chartPadding = {label:"None",data:100,color:"grey"};
 
@@ -142,7 +131,7 @@ var addAssessment = function() {
     if (newAssessment!==null) {
         assessments.push(newAssessment);
         addChartData(newAssessment.toFlotData());
-        var newPageAssessment = $("#assessmentList").append(newAssessment.toHTML().hide().fadeIn(500));
+        // var newPageAssessment = $("#assessmentList").append(newAssessment.toHTML().hide().fadeIn(500));
         if (!newAssessment.graded) {
             newPageAssessment.find('input.slider').slider();
         }
@@ -152,7 +141,7 @@ var addAssessment = function() {
 };
 
 var loadNoAssessments = function() {
-    $("#assessmentPanelBody").empty().append('<div class="alert alert-warning" id="emptyAlert">No assessments added yet!</div>');
+    // $("#assessmentPanelBody").empty().append('<div class="alert alert-warning" id="emptyAlert">No assessments added yet!</div>');
 };
 
 var addChartData = function(newData) {
@@ -197,28 +186,34 @@ var plotChart = function() {
 //document ready
 $(function() {
     $("button#addAssessment").click(function(evt) {
-        if (assessments.length === 0) {
-            $("#emptyAlert").remove();
-            $("#assessmentPanelBody").append('<div class="list-group" id="assessmentList"></div>');
-        }
         addAssessment();
     });
     // TODO - this will be data loading when it works
     var assessmentdata = []; 
 
+    var localAssessments = JSON.parse(localStorage.getItem('SubjectMarksAssessments'));
+    var mappedAssessments = $.map(localAssessments, function(ass) { return new Assessment(ass.assName, ass.score, ass.total, ass.weighting, ass.graded); });
+    assessments(mappedAssessments);
+
     // prepare document
-    if ( typeof assessmentdata == 'undefined' ) {
-        // no data
-        loadNoAssessments();
-    } else if ( assessmentdata.length === 0 ) {
-        // blank list
-        loadNoAssessments();
-    } else if ( assessmentdata.length > 0 ) {
-        //there is data
-    } else {
-        //some error
-    }
+    // if ( typeof assessmentdata == 'undefined' ) {
+    //     // no data
+    //     loadNoAssessments();
+    // } else if ( assessmentdata.length === 0 ) {
+    //     // blank list
+    //     loadNoAssessments();
+    // } else if ( assessmentdata.length > 0 ) {
+    //     //there is data
+    // } else {
+    //     //some error
+    // }
+
+    ko.applyBindings(assessments);
     
     plotChart();
     
 });
+
+// localStorage.getItem('SubjectMarksAssessments')
+// localStorage.setItem('SubjectMarksAssessments',ko.toJSON(assessments))
+
