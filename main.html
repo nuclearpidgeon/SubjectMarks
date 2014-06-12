@@ -43,17 +43,17 @@
                                     <p class="panel-title">Assessment Items</p>
                                 </div>
                                 <div class="panel-body" id="assessmentPanelBody">
-                                    <div class="list-group" id="assessmentList">
+                                    <div class="list-group" id="assessmentList" data-bind="with: subject">
                                         <!-- ko if: assessments().length == 0 -->
                                         <div class="alert alert-warning" id="emptyAlert">No assessments added yet!</div>
                                         <!-- /ko -->
                                         <!-- ko foreach: assessments -->
-                                        <div class="list-group-item list-group-item-dull">
-                                            <div class="btn btn-default btn-sm" style="float:right" id="editAssessment">Edit</div>
+                                        <div class="list-group-item" data-bind="css: { 'list-group-item-dull': graded() }">
+                                            <button class="btn btn-default btn-sm" style="float:right" id="editAssessment" data-bind="click: $parent.removeAssessment">Delete</button>
                                             <h3 class="list-group-item-heading"><!-- ko text: assName --><!-- /ko -->
                                                 <small data-bind="text: niceWeighting"></small>
                                             </h3>
-                                            <small>Graded</small>
+                                            <small data-bind="text: graded() ? 'Graded' : 'Not yet graded'"></small>
                                             <div class="progress">
                                                 <div class="progress-bar" data-bind="style: { width: percentage() + '%' }">
                                                     <span class="sr-only">Subject Mark: 100/120</span>
@@ -78,7 +78,6 @@
                                             <div class="form-group">
                                                 <label class="control-label" for="newAssessmentScore">Your result</label>
                                                 <input type="number" class="form-control" id="newAssessmentScore" placeholder="e.g. 15">
-                                                <p class="help-block">Leave blank if not yet graded</p>
                                             </div>
                                         </div>
                                         <div class="col-sm-3">
@@ -98,6 +97,15 @@
                                             </div>
                                         </div>
                                     </div>
+                                    <div class="row">
+                                        <div class="col-sm-12">
+                                            <div class="form-group">
+                                                <label>Graded? </label>
+                                                <input id="newAssessmentGraded" type="checkbox">
+                                                <span class="help-block">Check this box if you have recieved your final mark for this item</span>
+                                            </div>
+                                        </div>
+                                    </div>
                                     <button class="btn btn-block btn-default" id="addAssessment">Add Assessment
                                         <span class="glyphicon glyphicon-plus"> </span>
                                     </button>
@@ -110,11 +118,11 @@
                                     <div class="panel-title">Subject Overview</div>
                                 </div>
                                 <div class="panel-body">
-                                    <div id="subjectOverview">
+                                    <div id="subjectOverview" data-bind="with: subject">
                                         <div class="progress" style="margin-bottom:0px">
-                                            <div class="progress-bar progress-bar-success" id="overviewEarnt" style="width:0%">0% Earnt</div>
-                                            <div class="progress-bar progress-bar-warning" id="overviewPending" style="width:100%">100% Pending</div>
-                                            <div class="progress-bar progress-bar-danger" id="overviewLost" style="width:0%">0% Lost</div>
+                                            <div class="progress-bar progress-bar-success" id="overviewEarnt" data-bind="style: { width: marksOverview().earnt + '%' }"><!-- ko text: marksOverview().earnt --><!-- /ko -->% Earnt</div>
+                                            <div class="progress-bar progress-bar-warning" id="overviewPending" data-bind="style: { width: marksOverview().pending + '%' }"><!-- ko text: marksOverview().pending --><!-- /ko -->% Pending</div>
+                                            <div class="progress-bar progress-bar-danger" id="overviewLost" data-bind="style: { width: marksOverview().lost + '%' }"><!-- ko text: marksOverview().lost --><!-- /ko -->% Lost</div>
                                         </div>
                                         <div>
                                             <small class="pull-left">

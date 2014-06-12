@@ -1,7 +1,30 @@
-// Assessment List class
-function AssessmentList() {
-    this.assessments = ko.observableArray();
+// Subject class
+function Subject() {
+    var self = this;
+    self.assessments = ko.observableArray([]);
+
+    self.addAssessment = function(assessment) {
+        self.assessments.push(assessment);
+    };
+    self.removeAssessment = function() {
+        self.assessments.remove(this);
+    };
+
+    self.marksOverview = ko.computed(function() {
+        var marksEarnt = 0;
+        var marksLost = 0;
+        for (var i = 0; i < self.assessments().length; i++) {
+            marksEarnt += self.assessments()[i].earntAmount();
+            marksLost += self.assessments()[i].lostAmount();
+        }
+        return {
+            "earnt": marksEarnt,
+            "lost": marksLost,
+            "pending": 100 - marksEarnt - marksLost
+        };
+    });
 }
+
 // Assessment class
 function Assessment(assName, score, total, weighting, graded) {
     var self = this;
@@ -17,24 +40,20 @@ function Assessment(assName, score, total, weighting, graded) {
     self.percentage = ko.computed(function() {
         return Math.round((self.score()/self.total())*100);
     });
+    self.earntAmount = ko.computed(function() {
+        return self.percentage()*self.weighting()/100;
+    });
+    self.lostAmount = ko.computed(function() {
+        return ((100-self.percentage())*self.weighting())/100;
+    });
 }
-
+// Assessment methods
 Assessment.prototype.toFlotData = function() {
     return {
         label: this.assName,
         data: this.weighting
     };
 };
-
-Assessment.prototype.remove = function() {
-    assessments.remove(this);
-};
-
-var assessments = ko.observableArray([]); // global list of all assessments
-
-var chartPadding = {label:"None",data:100,color:"grey"};
-
-var chartData = [chartPadding];
 
 var updateErrorList = function(errorlist) {
     var errorlistString = '<div class="alert alert-danger" id="addAssessmentErrorList"><p><strong>Error!</strong></p>';
@@ -52,6 +71,7 @@ var updateErrorList = function(errorlist) {
     }
 };
 
+// Validates then loads a new assessment from the page
 var getNewAssessment = function() {
     var errors = false;
     var errorlist = [];
@@ -67,19 +87,17 @@ var getNewAssessment = function() {
         nameInput.parent().removeClass("has-error");
     }
 
+    var newGraded=$('input#newAssessmentGraded').prop('checked');
+
     var scoreInput = $('input#newAssessmentScore');
     var newScore = parseFloat(scoreInput.val()); //may need to change this
-    var newGraded=true;
-    if (isNaN(newScore)&&(scoreInput.val()!=="")) {
-        //invalid input (blank is valid for this field)
+    if (isNaN(newScore)&&(newGraded||((!newGraded)&&scoreInput.val()!==""))) {
+        //non-numeric input
         errors=true;
         errorlist.push("Please enter a valid assessment score");
         scoreInput.parent().addClass("has-error");
     } else {
-        if (scoreInput.val()==="") {
-            newGraded=false;
-            newScore=0; //Could maybe instead set to 50%?
-        }
+        if(!newGraded&&(scoreInput.val()==="")) newScore=0; //Could maybe instead set to 50%?
         scoreInput.parent().removeClass("has-error");
     }
 
@@ -112,6 +130,8 @@ var getNewAssessment = function() {
         weightingInput.closest(".form-group").removeClass("has-error");
     }
 
+
+
     if (errors) {
         updateErrorList(errorlist);
         return null;
@@ -129,14 +149,13 @@ var getNewAssessment = function() {
 var addAssessment = function() {
     var newAssessment = getNewAssessment();
     if (newAssessment!==null) {
-        assessments.push(newAssessment);
+        subject.addAssessment(newAssessment);
         addChartData(newAssessment.toFlotData());
         // var newPageAssessment = $("#assessmentList").append(newAssessment.toHTML().hide().fadeIn(500));
         if (!newAssessment.graded) {
             newPageAssessment.find('input.slider').slider();
         }
         plotChart();
-        updateOverview();
     }
 };
 
@@ -154,22 +173,6 @@ var addChartData = function(newData) {
     chartPadding.data = 100-total;
 };
 
-var updateOverview = function() {
-    var earnt=0;
-    var lost=0;
-    var numOfAssessments = assessments.length;
-    if (assessments.length) {
-        for (var i=0;i<numOfAssessments;i++) {
-            earnt+=assessments[i].percentage*assessments[i].weighting/100;
-            lost+=(100-assessments[i].percentage)*assessments[i].weighting/100;
-        }
-    }
-    $('#overviewEarnt').text(earnt.toString()+"% earnt").css("width",earnt.toString()+"%");
-    $('#overviewPending').text((100-earnt-lost).toString()+"% pending").css("width",(100-earnt-lost).toString()+"%");
-    $('#overviewLost').text(lost.toString()+"% lost").css("width",lost.toString()+"%");
-    return (100-earnt-lost).toString();
-};
-
 var plotChart = function() {
     $.plot('#pieChart', chartData, {
         series: {
@@ -183,17 +186,33 @@ var plotChart = function() {
     });
 };
 
-//document ready
+var saveState = function() {
+    localStorage.setItem('SubjectMarksAssessments',ko.toJSON(subject.assessments));
+};
+
+// global variables
+
+var subject = new Subject(); // global list of all assessments
+
+var chartPadding = {label:"None",data:100,color:"grey"};
+
+var chartData = [chartPadding];
+
+// document ready
 $(function() {
     $("button#addAssessment").click(function(evt) {
         addAssessment();
     });
+    $("button#editAssessment").on('click',function() {
+        $(this).toggleClass('disabled');
+    });
+
     // TODO - this will be data loading when it works
     var assessmentdata = []; 
 
     var localAssessments = JSON.parse(localStorage.getItem('SubjectMarksAssessments'));
     var mappedAssessments = $.map(localAssessments, function(ass) { return new Assessment(ass.assName, ass.score, ass.total, ass.weighting, ass.graded); });
-    assessments(mappedAssessments);
+    subject.assessments(mappedAssessments);
 
     // prepare document
     // if ( typeof assessmentdata == 'undefined' ) {
@@ -208,12 +227,9 @@ $(function() {
     //     //some error
     // }
 
-    ko.applyBindings(assessments);
+    ko.applyBindings(subject);
     
     plotChart();
     
 });
-
-// localStorage.getItem('SubjectMarksAssessments')
-// localStorage.setItem('SubjectMarksAssessments',ko.toJSON(assessments))
 
