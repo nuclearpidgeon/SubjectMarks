@@ -6,10 +6,16 @@ function Subject() {
     self.addAssessment = function(assessment) {
         self.assessments.push(assessment);
     };
-    self.removeAssessment = function() {
-        self.assessments.remove(this);
+    self.removeAssessment = function(assessment) {
+        self.assessments.remove(assessment);
     };
-
+    self.editAssessment = function(assessment) {
+        assessment.editing(true);
+    };
+    self.closeEdit = function(assessment) {
+        assessment.editing(false);
+    };
+    
     self.marksOverview = ko.computed(function() {
         var marksEarnt = 0;
         var marksLost = 0;
@@ -18,10 +24,23 @@ function Subject() {
             marksLost += self.assessments()[i].lostAmount();
         }
         return {
-            "earnt": marksEarnt.toFixed(2),
-            "lost": marksLost.toFixed(2),
-            "pending": (100 - marksEarnt - marksLost).toFixed(2)
+            "earnt": parseFloat(marksEarnt.toFixed(2)),
+            "lost": parseFloat(marksLost.toFixed(2)),
+            "pending": parseFloat((100 - marksEarnt - marksLost).toFixed(2))
         };
+    });
+    self.weightingOverview = ko.computed(function() {
+        var data = [];
+        var weightingTotal = 0;
+        for (var i = 0; i < self.assessments().length; i++) {
+            var newData = self.assessments()[i].toFlotData();
+            data.push(newData);
+            weightingTotal += newData.data;
+        }
+        if (weightingTotal < 100 ) {
+            data.push({label:"Not yet added",data:(100-weightingTotal),color:"grey"});
+        }
+        return data;
     });
 }
 
@@ -33,12 +52,13 @@ function Assessment(assName, score, total, weighting, graded) {
     self.total = ko.observable(total);
     self.weighting = ko.observable(weighting);
     self.graded = ko.observable(graded);
+    self.editing = ko.observable(false);
 
     self.niceWeighting = ko.computed(function() {
         return self.weighting().toString() + "% weight";
     });
     self.percentage = ko.computed(function() {
-        return Math.round((self.score()/self.total())*100);
+        return ((self.score()/(self.total()))*100).toFixed(2);
     });
     self.earntAmount = ko.computed(function() {
         return self.percentage()*self.weighting()/100;
@@ -50,8 +70,8 @@ function Assessment(assName, score, total, weighting, graded) {
 // Assessment methods
 Assessment.prototype.toFlotData = function() {
     return {
-        label: this.assName,
-        data: this.weighting
+        label: this.assName(),
+        data: this.weighting()
     };
 };
 
@@ -119,7 +139,7 @@ var getNewAssessment = function() {
     }
 
     var weightingInput = $('input#newAssessmentWeighting');
-    var newWeighting = parseInt(weightingInput.val());
+    var newWeighting = parseFloat(weightingInput.val());
     if (isNaN(newWeighting)){
         //invalid input
         errors=true;
@@ -150,12 +170,10 @@ var addAssessment = function() {
     var newAssessment = getNewAssessment();
     if (newAssessment!==null) {
         subject.addAssessment(newAssessment);
-        addChartData(newAssessment.toFlotData());
         // var newPageAssessment = $("#assessmentList").append(newAssessment.toHTML().hide().fadeIn(500));
-        if (!newAssessment.graded) {
-            newPageAssessment.find('input.slider').slider();
-        }
-        plotChart();
+        // if (!newAssessment.graded) {
+        //     newPageAssessment.find('input.slider').slider();
+        // }
     }
 };
 
@@ -163,18 +181,9 @@ var loadNoAssessments = function() {
     // $("#assessmentPanelBody").empty().append('<div class="alert alert-warning" id="emptyAlert">No assessments added yet!</div>');
 };
 
-var addChartData = function(newData) {
-    chartData.push(newData);
-    var arrlen = chartData.length;
-    var total = 0;
-    for (var i = 1;i<arrlen;i++) {
-        total += chartData[i].data;
-    }
-    chartPadding.data = 100-total;
-};
-
-var plotChart = function() {
-    $.plot('#pieChart', chartData, {
+var plotChart = function(data) {
+    //alert(data);
+    $.plot('#pieChart', data, {
         series: {
             pie: {
                 show: true
@@ -194,9 +203,74 @@ var saveState = function() {
 
 var subject = new Subject(); // global list of all assessments
 
-var chartPadding = {label:"None",data:100,color:"grey"};
+var chartPadding = {label:"Not yet added",data:100,color:"grey"};
 
 var chartData = [chartPadding];
+
+var d3Stuff = function(){
+    var $container = $('#pieChart'),
+        tau = 2 * Math.PI,
+        width = $container.width(),
+        height = $container.height(),
+        outerRadius = Math.min(width,height)/2,
+        innerRadius = (outerRadius/5)*4,
+        fontSize = (Math.min(width,height)/4);
+    
+    var arc = d3.svg.arc()
+        .innerRadius(innerRadius)
+        .outerRadius(outerRadius)
+        .startAngle(0);
+
+    var svg = d3.select('#pieChart').append("svg")
+        .attr("width", '70%')
+        .attr("height", '70%')
+        .attr('viewBox','0 0 '+Math.min(width,height) +' '+Math.min(width,height) )
+        .attr('preserveAspectRatio','xMinYMin')
+        .append("g")
+        .attr("transform", "translate(" + Math.min(width,height) / 2 + "," + Math.min(width,height) / 2 + ")");
+
+    var text = svg.append("text")
+        .text('0%')
+        .attr("text-anchor", "middle")
+        .style("font-size",fontSize+'px')
+        .attr("dy",fontSize/3)
+        .attr("dx",2);
+    
+    var background = svg.append("path")
+        .datum({endAngle: tau})
+        .style("fill", "#7cc35f")
+        .attr("d", arc);
+
+    var foreground = svg.append("path")
+        .datum({endAngle: 0 * tau})
+        .style("fill", "#57893e")
+        .attr("d", arc);
+
+    // setInterval(function() {
+    //     var dist = Math.random() * tau;
+    //     foreground.transition()
+    //         .duration(500)
+    //         .call(arcTween, dist);
+    // }, 2000);
+
+
+    function arcTween(transition, newAngle) {
+
+        transition.attrTween("d", function(d) {
+    
+            var interpolate = d3.interpolate(d.endAngle, newAngle);
+            
+            return function(t) {
+                
+                d.endAngle = interpolate(t);
+                
+                text.text(Math.round((d.endAngle/tau)*100)+'%');
+                
+                return arc(d);
+            };
+        });
+    }
+};
 
 // document ready
 $(function() {
@@ -226,10 +300,10 @@ $(function() {
     // } else {
     //     //some error
     // }
-
-    ko.applyBindings(subject);
     
-    plotChart();
+    ko.applyBindings(subject);
+    subject.weightingOverview.subscribe(function(newValue){plotChart(newValue);});
+    plotChart(subject.weightingOverview());
     
 });
 

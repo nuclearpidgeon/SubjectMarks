@@ -23,3 +23,8 @@
 .sliderSpacer {
 	margin: 10px 0px;
 }
+
+.weightingChart svg {
+	display: block;
+	margin: 0 auto;
+}
