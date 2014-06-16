@@ -18,9 +18,9 @@ function Subject() {
             marksLost += self.assessments()[i].lostAmount();
         }
         return {
-            "earnt": marksEarnt,
-            "lost": marksLost,
-            "pending": 100 - marksEarnt - marksLost
+            "earnt": marksEarnt.toFixed(2),
+            "lost": marksLost.toFixed(2),
+            "pending": (100 - marksEarnt - marksLost).toFixed(2)
         };
     });
 }
