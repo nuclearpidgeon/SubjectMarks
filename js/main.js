@@ -35,7 +35,8 @@ function Subject() {
         for (var i = 0; i < self.assessments().length; i++) {
             var newData = self.assessments()[i].toFlotData();
             data.push(newData);
-            weightingTotal += newData.data;
+            weightingTotal += parseFloat(self.assessments()[i].weighting());
+            // sometimes the weighting becomes a string on page change...
         }
         if (weightingTotal < 100 ) {
             data.push({label:"Not yet added",data:(100-weightingTotal),color:"grey"});
