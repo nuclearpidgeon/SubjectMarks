@@ -45,6 +45,7 @@
 
 .progress-fat {
 	height: 50px;
+	border-radius: 10px;
 }
 
 .progress-bar-fat {
