@@ -107,7 +107,9 @@ var getNewAssessment = function() {
         nameInput.parent().removeClass("has-error");
     }
 
-    var newGraded=$('input#newAssessmentGraded').prop('checked');
+    // this loads graded value from the page, but will add this later
+    // var newGraded=$('input#newAssessmentGraded').prop('checked');
+    var newGraded = true;
 
     var scoreInput = $('input#newAssessmentScore');
     var newScore = parseFloat(scoreInput.val()); //may need to change this
