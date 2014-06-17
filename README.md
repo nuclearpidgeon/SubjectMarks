@@ -15,8 +15,8 @@ e.g.:
 
 #How to use
 
-* Run it here on GitHub Pages!
-* Or you can download it yourself if you want to, then open `main.html` in your web browser of choice ([that isn't Internet Explorer](http://toastytech.com/evil/ "plz don't use Internet Explorer you'll make me cry"))
+* Run it [here](http://nuclearpidgeon.github.io/SubjectMarks/) thanks to GitHub Pages!
+* Or you can download it yourself if you want to, then open `index.html` in your web browser of choice ([that isn't Internet Explorer](http://toastytech.com/evil/ "plz don't use Internet Explorer you'll make me cry"))
 
 # Credits/Frameworks used
 * Uses [knockoutjs](http://knockoutjs.com/ "^ Sexy! ^") for automatic UI updating on data changing.
