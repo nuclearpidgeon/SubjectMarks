@@ -64,7 +64,7 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="list-group-item list-group-item-darkgrey" id="editPane" data-bind="visible: editing()">
+                                        <div class="list-group-item list-group-item-dull" id="editPane" data-bind="visible: editing()">
                                             <div class="row">
                                                 <div class="col-sm-12">
                                                     <div class="form-group">
@@ -159,10 +159,10 @@
                                             <div class="pull-left marks-earnt bg-success">Marks earnt</div>
                                             <div class="pull-right marks-lost bg-danger">Marks lost</div>
                                         </div>
-                                        <div class="progress" style="margin-bottom:0px">
-                                            <div class="progress-bar progress-bar-success" id="overviewEarnt" data-bind="style: { width: marksOverview().earnt + '%' }"><!-- ko text: marksOverview().earnt --><!-- /ko -->% Earnt</div>
-                                            <div class="progress-bar progress-bar-warning" id="overviewPending" data-bind="style: { width: marksOverview().pending + '%' }"><!-- ko text: marksOverview().pending --><!-- /ko -->% Pending</div>
-                                            <div class="progress-bar progress-bar-danger" id="overviewLost" data-bind="style: { width: marksOverview().lost + '%' }"><!-- ko text: marksOverview().lost --><!-- /ko -->% Lost</div>
+                                        <div class="progress progress-fat" style="margin-bottom:0px">
+                                            <div class="progress-bar progress-bar-fat progress-bar-success" id="overviewEarnt" data-bind="style: { width: marksOverview().earnt + '%' }"><!-- ko text: marksOverview().earnt --><!-- /ko -->% Earnt</div>
+                                            <div class="progress-bar progress-bar-fat progress-bar-warning" id="overviewPending" data-bind="style: { width: marksOverview().pending + '%' }"><!-- ko text: marksOverview().pending --><!-- /ko -->% Pending</div>
+                                            <div class="progress-bar progress-bar-fat progress-bar-danger" id="overviewLost" data-bind="style: { width: marksOverview().lost + '%' }"><!-- ko text: marksOverview().lost --><!-- /ko -->% Lost</div>
                                         </div>
                                         <div>
                                             <small class="pull-left">

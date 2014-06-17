@@ -42,3 +42,11 @@
 	padding: 2px 4px;
 	margin-bottom: 4px;
 }
+
+.progress-fat {
+	height: 50px;
+}
+
+.progress-bar-fat {
+	line-height: 50px;
+}
