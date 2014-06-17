@@ -226,7 +226,7 @@ $(function() {
     var assessmentdata = localStorage.getItem('SubjectMarksAssessments'); 
 
     if (assessmentdata !== null) {
-        var localAssessments = JSON.parse();
+        var localAssessments = JSON.parse(assessmentdata);
         var mappedAssessments = $.map(localAssessments, function(ass) { return new Assessment(ass.assName, ass.score, ass.total, ass.weighting, ass.graded); });
         subject.assessments(mappedAssessments);
     }
