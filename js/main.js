@@ -199,6 +199,10 @@ var saveState = function() {
     localStorage.setItem('SubjectMarksAssessments',ko.toJSON(subject.assessments));
 };
 
+var clearState = function() {
+    localStorage.clearItem('SubjectMarksAssessments');
+};
+
 // global variables
 
 var subject = new Subject(); // global list of all assessments
@@ -206,6 +210,42 @@ var subject = new Subject(); // global list of all assessments
 var chartPadding = {label:"Not yet added",data:100,color:"grey"};
 
 var chartData = [chartPadding];
+
+// document ready
+$(function() {
+    $("button#addAssessment").click(function(evt) {
+        addAssessment();
+    });
+    $("button#editAssessment").on('click',function() {
+        $(this).toggleClass('disabled');
+    });
+
+    // TODO - this will be data loading when it works
+    var assessmentdata = []; 
+
+    var localAssessments = JSON.parse(localStorage.getItem('SubjectMarksAssessments'));
+    var mappedAssessments = $.map(localAssessments, function(ass) { return new Assessment(ass.assName, ass.score, ass.total, ass.weighting, ass.graded); });
+    subject.assessments(mappedAssessments);
+
+    // prepare document
+    // if ( typeof assessmentdata == 'undefined' ) {
+    //     // no data
+    //     loadNoAssessments();
+    // } else if ( assessmentdata.length === 0 ) {
+    //     // blank list
+    //     loadNoAssessments();
+    // } else if ( assessmentdata.length > 0 ) {
+    //     //there is data
+    // } else {
+    //     //some error
+    // }
+    
+    ko.applyBindings(subject);
+    subject.weightingOverview.subscribe(function(newValue){plotChart(newValue);});
+    //subject;
+    plotChart(subject.weightingOverview());
+    
+});
 
 var d3Stuff = function(){
     var $container = $('#pieChart'),
@@ -271,39 +311,3 @@ var d3Stuff = function(){
         });
     }
 };
-
-// document ready
-$(function() {
-    $("button#addAssessment").click(function(evt) {
-        addAssessment();
-    });
-    $("button#editAssessment").on('click',function() {
-        $(this).toggleClass('disabled');
-    });
-
-    // TODO - this will be data loading when it works
-    var assessmentdata = []; 
-
-    var localAssessments = JSON.parse(localStorage.getItem('SubjectMarksAssessments'));
-    var mappedAssessments = $.map(localAssessments, function(ass) { return new Assessment(ass.assName, ass.score, ass.total, ass.weighting, ass.graded); });
-    subject.assessments(mappedAssessments);
-
-    // prepare document
-    // if ( typeof assessmentdata == 'undefined' ) {
-    //     // no data
-    //     loadNoAssessments();
-    // } else if ( assessmentdata.length === 0 ) {
-    //     // blank list
-    //     loadNoAssessments();
-    // } else if ( assessmentdata.length > 0 ) {
-    //     //there is data
-    // } else {
-    //     //some error
-    // }
-    
-    ko.applyBindings(subject);
-    subject.weightingOverview.subscribe(function(newValue){plotChart(newValue);});
-    plotChart(subject.weightingOverview());
-    
-});
-

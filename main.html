@@ -181,9 +181,18 @@
                             </div>
                         </div>
                         <div class="col-md-12">
-                            <div class="pull-right"><button class="btn btn-success" onclick="saveState();alert('Subject data saved');">Save Subject data to browser <span class="glyphicon glyphicon-lock"> </span></button></div>
+                            <div class="pull-right">
+                                <button class="btn btn-warning" onclick="if(confirm('Are you sure you want to clear your saved data?')){clearState()};">Clear Subject data from browser <span class="glyphicon glyphicon-lock"> </span></button>
+                                <button class="btn btn-success" onclick="saveState();alert('Subject data saved');">Save Subject data to browser <span class="glyphicon glyphicon-lock"> </span></button>
+                            </div>
                         </div>
                     </div>
+                </div>
+            </div>
+            <div class="col-md-12">
+                <div class="alert alert-warning">
+                    <b>Got any suggestions or feedback?</b>
+                    <p>I'd love to hear from you. <a href="https://docs.google.com/forms/d/1PmWCxkdZHnZ_QfxOyw_mNscLj5dhOgGNXOfIo-MrdyQ/viewform?usp=send_form" target="_blank">Submit your feedback here</a>!</p>
                 </div>
             </div>
         </div>
