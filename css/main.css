@@ -28,3 +28,17 @@
 	display: block;
 	margin: 0 auto;
 }
+
+.marks-earnt {
+	color: #5cb85c; /* bootstrap green */
+}
+
+.marks-lost {
+	color: #d9534f; /* bootstrap red */
+}
+
+.marks-lost,.marks-earnt {
+	border-radius: 4px;
+	padding: 2px 4px;
+	margin-bottom: 4px;
+}

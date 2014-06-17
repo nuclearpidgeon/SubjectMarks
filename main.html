@@ -30,7 +30,7 @@
     </header> -->
     <main>
         <div class="container">
-            <h1>SubjectMarks</h1>
+            <h1>SubjectMarks <small><code>Beta 1.0</code></small></h1>
             <div class="panel panel-default">
                 <div class="panel-heading">
                     <div class="panel-title">Subject</div>
@@ -155,6 +155,10 @@
                                 </div>
                                 <div class="panel-body">
                                     <div id="subjectOverview" data-bind="with: subject">
+                                        <div id="subjectOverviewLegend" class="clearfix">
+                                            <div class="pull-left marks-earnt bg-success">Marks earnt</div>
+                                            <div class="pull-right marks-lost bg-danger">Marks lost</div>
+                                        </div>
                                         <div class="progress" style="margin-bottom:0px">
                                             <div class="progress-bar progress-bar-success" id="overviewEarnt" data-bind="style: { width: marksOverview().earnt + '%' }"><!-- ko text: marksOverview().earnt --><!-- /ko -->% Earnt</div>
                                             <div class="progress-bar progress-bar-warning" id="overviewPending" data-bind="style: { width: marksOverview().pending + '%' }"><!-- ko text: marksOverview().pending --><!-- /ko -->% Pending</div>
@@ -193,6 +197,13 @@
                 <div class="alert alert-warning">
                     <b>Got any suggestions or feedback?</b>
                     <p>I'd love to hear from you. <a href="https://docs.google.com/forms/d/1PmWCxkdZHnZ_QfxOyw_mNscLj5dhOgGNXOfIo-MrdyQ/viewform?usp=send_form" target="_blank">Submit your feedback here</a>!</p>
+                    <br />
+                    <b>Planned Features</b>
+                    <ul>
+                        <li>Ability to manage more than one subject</li>
+                        <li>Export/Import of data</li>
+                        <li>Slider-bars for subjects if you haven't got a mark for them yet</li>
+                    </ul>
                 </div>
             </div>
         </div>
