@@ -6,14 +6,6 @@
     <link rel="stylesheet" type="text/css" href="css/bootstrap-theme.css">
     <link rel="stylesheet" type="text/css" href="css/bootstrap-slider.css">
     <link rel="stylesheet" type="text/css" href="css/main.css">
-
-    <script type="text/javascript" src="js/jquery.js"></script>
-    <script type="text/javascript" src="js/jquery.flot.js"></script>
-    <script type="text/javascript" src="js/jquery.flot.pie.js"></script>
-    <script type="text/javascript" src="js/bootstrap.js"></script>
-    <script type="text/javascript" src="js/bootstrap-slider.js"></script>
-    <script type="text/javascript" src="js/main.js"></script>
-
     <title>SubjectMarks</title>
 </head>
 
@@ -41,7 +33,7 @@
             <h1>SubjectMarks</h1>
             <div class="panel panel-default">
                 <div class="panel-heading">
-                    <div class="panel-title">A Subject</div>
+                    <div class="panel-title">Subject</div>
                 </div>
                 <div class="panel-body">
                     <div class="row">
@@ -51,8 +43,61 @@
                                     <p class="panel-title">Assessment Items</p>
                                 </div>
                                 <div class="panel-body" id="assessmentPanelBody">
-                                    <div class="list-group" id="assessmentList">
-
+                                    <div class="list-group" id="assessmentList" data-bind="with: subject">
+                                        <!-- ko if: assessments().length == 0 -->
+                                        <div class="alert alert-warning" id="emptyAlert">No assessments added yet!</div>
+                                        <!-- /ko -->
+                                        <!-- ko foreach: assessments -->
+                                        <div class="list-group-item" data-bind="css: { 'list-group-item-dull': graded() }">
+                                            <div class="btn-group" style="float:right">
+                                                <button class="btn btn-warning btn-sm" id="editAssessment" data-bind="click: $parent.editAssessment"><span class="glyphicon glyphicon-pencil"> </span></button>
+                                                <button class="btn btn-danger btn-sm" id="removeAssessment" data-bind="click: $parent.removeAssessment"><span class="glyphicon glyphicon-trash"> </span></button>
+                                            </div>
+                                            <h3 class="list-group-item-heading"><!-- ko text: assName --><!-- /ko -->
+                                                <small data-bind="text: niceWeighting"></small>
+                                            </h3>
+                                            <small data-bind="text: graded() ? 'Graded' : 'Not yet graded'"></small>
+                                            <div class="progress">
+                                                <div class="progress-bar" data-bind="style: { width: percentage() + '%' }">
+                                                    <span class="sr-only">Subject Mark: 100/120</span>
+                                                    <span><!-- ko text: score --><!-- /ko -->/<!-- ko text: total --><!-- /ko --></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="list-group-item list-group-item-darkgrey" id="editPane" data-bind="visible: editing()">
+                                            <div class="row">
+                                                <div class="col-sm-12">
+                                                    <div class="form-group">
+                                                        <label class="control-label">Name</label>
+                                                        <input class="form-control" type="text" data-bind="value: assName">
+                                                    </div>
+                                                </div>
+                                                <div class="col-sm-4">
+                                                    <div class="form-group">
+                                                        <label class="control-label">Score</label>
+                                                        <input class="form-control" type="number" data-bind="value: score">
+                                                    </div>
+                                                </div>
+                                                <div class="col-sm-4">
+                                                    <div class="form-group">
+                                                        <label class="control-label">Total</label>
+                                                        <input class="form-control" type="number" data-bind="value: total">
+                                                    </div>
+                                                </div>
+                                                <div class="col-sm-4">
+                                                    <div class="form-group">
+                                                        <label class="control-label">Weight</label>
+                                                        <input class="form-control" type="number" data-bind="value: weighting">
+                                                    </div>
+                                                </div>
+                                                <div class="col-sm-12 form-group clearfix">
+                                                    <div class="pull-right">
+                                                        <button class="btn btn-success" data-bind="click: $parent.closeEdit">Close</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>  
+                                        <!-- /ko -->
                                     </div>
                                 </div>
                                 <div class="panel-footer clearfix" id="assessmentPanelFooter">
@@ -69,7 +114,6 @@
                                             <div class="form-group">
                                                 <label class="control-label" for="newAssessmentScore">Your result</label>
                                                 <input type="number" class="form-control" id="newAssessmentScore" placeholder="e.g. 15">
-                                                <p class="help-block">Leave blank if not yet graded</p>
                                             </div>
                                         </div>
                                         <div class="col-sm-3">
@@ -89,6 +133,15 @@
                                             </div>
                                         </div>
                                     </div>
+                                    <div class="row">
+                                        <div class="col-sm-12">
+                                            <div class="form-group">
+                                                <label>Graded? </label>
+                                                <input id="newAssessmentGraded" type="checkbox">
+                                                <span class="help-block">Check this box if you have recieved your final mark for this item</span>
+                                            </div>
+                                        </div>
+                                    </div>
                                     <button class="btn btn-block btn-default" id="addAssessment">Add Assessment
                                         <span class="glyphicon glyphicon-plus"> </span>
                                     </button>
@@ -101,11 +154,11 @@
                                     <div class="panel-title">Subject Overview</div>
                                 </div>
                                 <div class="panel-body">
-                                    <div id="subjectOverview">
+                                    <div id="subjectOverview" data-bind="with: subject">
                                         <div class="progress" style="margin-bottom:0px">
-                                            <div class="progress-bar progress-bar-success" id="overviewEarnt" style="width:0%">0% Earnt</div>
-                                            <div class="progress-bar progress-bar-warning" id="overviewPending" style="width:100%">100% Pending</div>
-                                            <div class="progress-bar progress-bar-danger" id="overviewLost" style="width:0%">0% Lost</div>
+                                            <div class="progress-bar progress-bar-success" id="overviewEarnt" data-bind="style: { width: marksOverview().earnt + '%' }"><!-- ko text: marksOverview().earnt --><!-- /ko -->% Earnt</div>
+                                            <div class="progress-bar progress-bar-warning" id="overviewPending" data-bind="style: { width: marksOverview().pending + '%' }"><!-- ko text: marksOverview().pending --><!-- /ko -->% Pending</div>
+                                            <div class="progress-bar progress-bar-danger" id="overviewLost" data-bind="style: { width: marksOverview().lost + '%' }"><!-- ko text: marksOverview().lost --><!-- /ko -->% Lost</div>
                                         </div>
                                         <div>
                                             <small class="pull-left">
@@ -119,16 +172,43 @@
                                 </div>
                             </div>
                             <div class="panel panel-default">
-                                <div class="panel-body">
-                                    <div id="pieChart" style="width:100%;height:300px"></div>
+                                <div class="panel-heading">
+                                    <p class="panel-title">Weighting overview</p>
                                 </div>
+                                <div class="panel-body">
+                                    <div id="pieChart" class="weightingChart" style="width:100%;height:400px"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="pull-right">
+                                <button class="btn btn-warning" onclick="if(confirm('Are you sure you want to clear your saved data?')){clearState()};">Clear Subject data from browser <span class="glyphicon glyphicon-lock"> </span></button>
+                                <button class="btn btn-success" onclick="saveState();alert('Subject data saved');">Save Subject data to browser <span class="glyphicon glyphicon-lock"> </span></button>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+            <div class="col-md-12">
+                <div class="alert alert-warning">
+                    <b>Got any suggestions or feedback?</b>
+                    <p>I'd love to hear from you. <a href="https://docs.google.com/forms/d/1PmWCxkdZHnZ_QfxOyw_mNscLj5dhOgGNXOfIo-MrdyQ/viewform?usp=send_form" target="_blank">Submit your feedback here</a>!</p>
+                </div>
+            </div>
         </div>
     </main>
+
+    <script type="text/javascript" src="js/jquery.js"></script>
+    <script type="text/javascript" src="js/jquery.flot.js"></script>
+    <script type="text/javascript" src="js/jquery.flot.pie.js"></script>
+    <script type="text/javascript" src="js/bootstrap.js"></script>
+    <script type="text/javascript" src="js/transition.js"></script>
+    <script type="text/javascript" src="js/collapse.js"></script>
+    <script type="text/javascript" src="js/bootstrap-slider.js"></script>
+    <script type="text/javascript" src="js/knockout.js"></script>
+    <!-- <script type="text/javascript" src="http://d3js.org/d3.v3.min.js"></script> -->
+    <script type="text/javascript" src="js/main.js"></script>
+
 </body>
 
 </html>

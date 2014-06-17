@@ -1,51 +1,79 @@
-// Assessment class
-function Assessment(assName, score, total, weighting, graded) {
-    this.assName = assName;
-    this.score = score;
-    this.total = total;
-    this.weighting = weighting;
-    this.graded = graded;
-    this.percentage = Math.round((this.score/this.total)*100);
+// Subject class
+function Subject() {
+    var self = this;
+    self.assessments = ko.observableArray([]);
+
+    self.addAssessment = function(assessment) {
+        self.assessments.push(assessment);
+    };
+    self.removeAssessment = function(assessment) {
+        self.assessments.remove(assessment);
+    };
+    self.editAssessment = function(assessment) {
+        assessment.editing(true);
+    };
+    self.closeEdit = function(assessment) {
+        assessment.editing(false);
+    };
+    
+    self.marksOverview = ko.computed(function() {
+        var marksEarnt = 0;
+        var marksLost = 0;
+        for (var i = 0; i < self.assessments().length; i++) {
+            marksEarnt += self.assessments()[i].earntAmount();
+            marksLost += self.assessments()[i].lostAmount();
+        }
+        return {
+            "earnt": parseFloat(marksEarnt.toFixed(2)),
+            "lost": parseFloat(marksLost.toFixed(2)),
+            "pending": parseFloat((100 - marksEarnt - marksLost).toFixed(2))
+        };
+    });
+    self.weightingOverview = ko.computed(function() {
+        var data = [];
+        var weightingTotal = 0;
+        for (var i = 0; i < self.assessments().length; i++) {
+            var newData = self.assessments()[i].toFlotData();
+            data.push(newData);
+            weightingTotal += newData.data;
+        }
+        if (weightingTotal < 100 ) {
+            data.push({label:"Not yet added",data:(100-weightingTotal),color:"grey"});
+        }
+        return data;
+    });
 }
 
-Assessment.prototype.toHTML = function() {
-    //<a class="badge">&times;</a>
-    var html = $('<div class="list-group-item"></div>');
-    html.append('<h3 class="list-group-item-heading">'+this.assName+' <small>'+this.weighting+'% weight</small></h3>');
-    if (this.graded) {
-        html.addClass("list-group-item-dull");
-        html.append("<small>Graded</small>");
-    } else {
-        //html.addClass("list-group-item-info");
-        html.append("<small>Not yet graded</small>");
-    }
-    if (this.graded) {
-        $(html).append('<div class="progress"><div class="progress-bar" style="width: '+this.percentage+'%"> \
-            <span class="sr-only">Subject Mark: '+this.score+'/'+this.total+'</span> \
-            <span>'+this.score+'/'+this.total+'</span></div></div>');
-    } else {
-        var slider = $('<div class="sliderSpacer"><input class="slider"></input></div>');
-        $(html).append(slider);
-    }
-    return html;
-};
+// Assessment class
+function Assessment(assName, score, total, weighting, graded) {
+    var self = this;
+    self.assName = ko.observable(assName);
+    self.score = ko.observable(score);
+    self.total = ko.observable(total);
+    self.weighting = ko.observable(weighting);
+    self.graded = ko.observable(graded);
+    self.editing = ko.observable(false);
 
+    self.niceWeighting = ko.computed(function() {
+        return self.weighting().toString() + "% weight";
+    });
+    self.percentage = ko.computed(function() {
+        return ((self.score()/(self.total()))*100).toFixed(2);
+    });
+    self.earntAmount = ko.computed(function() {
+        return self.percentage()*self.weighting()/100;
+    });
+    self.lostAmount = ko.computed(function() {
+        return ((100-self.percentage())*self.weighting())/100;
+    });
+}
+// Assessment methods
 Assessment.prototype.toFlotData = function() {
     return {
-        label: this.assName,
-        data: this.weighting
+        label: this.assName(),
+        data: this.weighting()
     };
 };
-
-Assessment.prototype.remove = function() {
-    assessments.remove(this);
-};
-
-var assessments = []; // global list of all assessments
-
-var chartPadding = {label:"None",data:100,color:"grey"};
-
-var chartData = [chartPadding];
 
 var updateErrorList = function(errorlist) {
     var errorlistString = '<div class="alert alert-danger" id="addAssessmentErrorList"><p><strong>Error!</strong></p>';
@@ -63,6 +91,7 @@ var updateErrorList = function(errorlist) {
     }
 };
 
+// Validates then loads a new assessment from the page
 var getNewAssessment = function() {
     var errors = false;
     var errorlist = [];
@@ -78,19 +107,17 @@ var getNewAssessment = function() {
         nameInput.parent().removeClass("has-error");
     }
 
+    var newGraded=$('input#newAssessmentGraded').prop('checked');
+
     var scoreInput = $('input#newAssessmentScore');
     var newScore = parseFloat(scoreInput.val()); //may need to change this
-    var newGraded=true;
-    if (isNaN(newScore)&&(scoreInput.val()!=="")) {
-        //invalid input (blank is valid for this field)
+    if (isNaN(newScore)&&(newGraded||((!newGraded)&&scoreInput.val()!==""))) {
+        //non-numeric input
         errors=true;
         errorlist.push("Please enter a valid assessment score");
         scoreInput.parent().addClass("has-error");
     } else {
-        if (scoreInput.val()==="") {
-            newGraded=false;
-            newScore=0; //Could maybe instead set to 50%?
-        }
+        if(!newGraded&&(scoreInput.val()==="")) newScore=0; //Could maybe instead set to 50%?
         scoreInput.parent().removeClass("has-error");
     }
 
@@ -112,7 +139,7 @@ var getNewAssessment = function() {
     }
 
     var weightingInput = $('input#newAssessmentWeighting');
-    var newWeighting = parseInt(weightingInput.val());
+    var newWeighting = parseFloat(weightingInput.val());
     if (isNaN(newWeighting)){
         //invalid input
         errors=true;
@@ -122,6 +149,8 @@ var getNewAssessment = function() {
     } else {
         weightingInput.closest(".form-group").removeClass("has-error");
     }
+
+
 
     if (errors) {
         updateErrorList(errorlist);
@@ -140,49 +169,21 @@ var getNewAssessment = function() {
 var addAssessment = function() {
     var newAssessment = getNewAssessment();
     if (newAssessment!==null) {
-        assessments.push(newAssessment);
-        addChartData(newAssessment.toFlotData());
-        var newPageAssessment = $("#assessmentList").append(newAssessment.toHTML().hide().fadeIn(500));
-        if (!newAssessment.graded) {
-            newPageAssessment.find('input.slider').slider();
-        }
-        plotChart();
-        updateOverview();
+        subject.addAssessment(newAssessment);
+        // var newPageAssessment = $("#assessmentList").append(newAssessment.toHTML().hide().fadeIn(500));
+        // if (!newAssessment.graded) {
+        //     newPageAssessment.find('input.slider').slider();
+        // }
     }
 };
 
 var loadNoAssessments = function() {
-    $("#assessmentPanelBody").empty().append('<div class="alert alert-warning" id="emptyAlert">No assessments added yet!</div>');
+    // $("#assessmentPanelBody").empty().append('<div class="alert alert-warning" id="emptyAlert">No assessments added yet!</div>');
 };
 
-var addChartData = function(newData) {
-    chartData.push(newData);
-    var arrlen = chartData.length;
-    var total = 0;
-    for (var i = 1;i<arrlen;i++) {
-        total += chartData[i].data;
-    }
-    chartPadding.data = 100-total;
-};
-
-var updateOverview = function() {
-    var earnt=0;
-    var lost=0;
-    var numOfAssessments = assessments.length;
-    if (assessments.length) {
-        for (var i=0;i<numOfAssessments;i++) {
-            earnt+=assessments[i].percentage*assessments[i].weighting/100;
-            lost+=(100-assessments[i].percentage)*assessments[i].weighting/100;
-        }
-    }
-    $('#overviewEarnt').text(earnt.toString()+"% earnt").css("width",earnt.toString()+"%");
-    $('#overviewPending').text((100-earnt-lost).toString()+"% pending").css("width",(100-earnt-lost).toString()+"%");
-    $('#overviewLost').text(lost.toString()+"% lost").css("width",lost.toString()+"%");
-    return (100-earnt-lost).toString();
-};
-
-var plotChart = function() {
-    $.plot('#pieChart', chartData, {
+var plotChart = function(data) {
+    //alert(data);
+    $.plot('#pieChart', data, {
         series: {
             pie: {
                 show: true
@@ -194,31 +195,119 @@ var plotChart = function() {
     });
 };
 
-//document ready
+var saveState = function() {
+    localStorage.setItem('SubjectMarksAssessments',ko.toJSON(subject.assessments));
+};
+
+var clearState = function() {
+    localStorage.clearItem('SubjectMarksAssessments');
+};
+
+// global variables
+
+var subject = new Subject(); // global list of all assessments
+
+var chartPadding = {label:"Not yet added",data:100,color:"grey"};
+
+var chartData = [chartPadding];
+
+// document ready
 $(function() {
     $("button#addAssessment").click(function(evt) {
-        if (assessments.length === 0) {
-            $("#emptyAlert").remove();
-            $("#assessmentPanelBody").append('<div class="list-group" id="assessmentList"></div>');
-        }
         addAssessment();
     });
+    $("button#editAssessment").on('click',function() {
+        $(this).toggleClass('disabled');
+    });
+
     // TODO - this will be data loading when it works
     var assessmentdata = []; 
 
+    var localAssessments = JSON.parse(localStorage.getItem('SubjectMarksAssessments'));
+    var mappedAssessments = $.map(localAssessments, function(ass) { return new Assessment(ass.assName, ass.score, ass.total, ass.weighting, ass.graded); });
+    subject.assessments(mappedAssessments);
+
     // prepare document
-    if ( typeof assessmentdata == 'undefined' ) {
-        // no data
-        loadNoAssessments();
-    } else if ( assessmentdata.length === 0 ) {
-        // blank list
-        loadNoAssessments();
-    } else if ( assessmentdata.length > 0 ) {
-        //there is data
-    } else {
-        //some error
-    }
+    // if ( typeof assessmentdata == 'undefined' ) {
+    //     // no data
+    //     loadNoAssessments();
+    // } else if ( assessmentdata.length === 0 ) {
+    //     // blank list
+    //     loadNoAssessments();
+    // } else if ( assessmentdata.length > 0 ) {
+    //     //there is data
+    // } else {
+    //     //some error
+    // }
     
-    plotChart();
+    ko.applyBindings(subject);
+    subject.weightingOverview.subscribe(function(newValue){plotChart(newValue);});
+    //subject;
+    plotChart(subject.weightingOverview());
     
 });
+
+var d3Stuff = function(){
+    var $container = $('#pieChart'),
+        tau = 2 * Math.PI,
+        width = $container.width(),
+        height = $container.height(),
+        outerRadius = Math.min(width,height)/2,
+        innerRadius = (outerRadius/5)*4,
+        fontSize = (Math.min(width,height)/4);
+    
+    var arc = d3.svg.arc()
+        .innerRadius(innerRadius)
+        .outerRadius(outerRadius)
+        .startAngle(0);
+
+    var svg = d3.select('#pieChart').append("svg")
+        .attr("width", '70%')
+        .attr("height", '70%')
+        .attr('viewBox','0 0 '+Math.min(width,height) +' '+Math.min(width,height) )
+        .attr('preserveAspectRatio','xMinYMin')
+        .append("g")
+        .attr("transform", "translate(" + Math.min(width,height) / 2 + "," + Math.min(width,height) / 2 + ")");
+
+    var text = svg.append("text")
+        .text('0%')
+        .attr("text-anchor", "middle")
+        .style("font-size",fontSize+'px')
+        .attr("dy",fontSize/3)
+        .attr("dx",2);
+    
+    var background = svg.append("path")
+        .datum({endAngle: tau})
+        .style("fill", "#7cc35f")
+        .attr("d", arc);
+
+    var foreground = svg.append("path")
+        .datum({endAngle: 0 * tau})
+        .style("fill", "#57893e")
+        .attr("d", arc);
+
+    // setInterval(function() {
+    //     var dist = Math.random() * tau;
+    //     foreground.transition()
+    //         .duration(500)
+    //         .call(arcTween, dist);
+    // }, 2000);
+
+
+    function arcTween(transition, newAngle) {
+
+        transition.attrTween("d", function(d) {
+    
+            var interpolate = d3.interpolate(d.endAngle, newAngle);
+            
+            return function(t) {
+                
+                d.endAngle = interpolate(t);
+                
+                text.text(Math.round((d.endAngle/tau)*100)+'%');
+                
+                return arc(d);
+            };
+        });
+    }
+};

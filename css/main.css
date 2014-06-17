@@ -8,6 +8,10 @@
 	background-color: #f5f5f5;
 }
 
+.list-group-item-darkgrey {
+	background-color: #CCC;
+}
+
 #assessmentList .slider {
 	width: 100%;
 }
@@ -18,4 +22,9 @@
 
 .sliderSpacer {
 	margin: 10px 0px;
+}
+
+.weightingChart svg {
+	display: block;
+	margin: 0 auto;
 }
