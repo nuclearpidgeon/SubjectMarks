@@ -203,7 +203,7 @@ var saveState = function() {
 };
 
 var clearState = function() {
-    localStorage.clearItem('SubjectMarksAssessments');
+    localStorage.removeItem('SubjectMarksAssessments');
 };
 
 // global variables
