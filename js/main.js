@@ -223,25 +223,13 @@ $(function() {
         $(this).toggleClass('disabled');
     });
 
-    // TODO - this will be data loading when it works
-    var assessmentdata = []; 
+    var assessmentdata = localStorage.getItem('SubjectMarksAssessments'); 
 
-    var localAssessments = JSON.parse(localStorage.getItem('SubjectMarksAssessments'));
-    var mappedAssessments = $.map(localAssessments, function(ass) { return new Assessment(ass.assName, ass.score, ass.total, ass.weighting, ass.graded); });
-    subject.assessments(mappedAssessments);
-
-    // prepare document
-    // if ( typeof assessmentdata == 'undefined' ) {
-    //     // no data
-    //     loadNoAssessments();
-    // } else if ( assessmentdata.length === 0 ) {
-    //     // blank list
-    //     loadNoAssessments();
-    // } else if ( assessmentdata.length > 0 ) {
-    //     //there is data
-    // } else {
-    //     //some error
-    // }
+    if (assessmentdata !== null) {
+        var localAssessments = JSON.parse();
+        var mappedAssessments = $.map(localAssessments, function(ass) { return new Assessment(ass.assName, ass.score, ass.total, ass.weighting, ass.graded); });
+        subject.assessments(mappedAssessments);
+    }
     
     ko.applyBindings(subject);
     subject.weightingOverview.subscribe(function(newValue){plotChart(newValue);});
