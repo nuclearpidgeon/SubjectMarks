@@ -3,19 +3,39 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title></title>
+        <title>pie chart test</title>
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="stylesheet" href="css/main.css">
     </head>
     <body>
         <h1>D3.js double donut ring test page</h1>
-        <svg id="svg_donut" width="600" height="400"></svg>
+        <form>
+            <fieldset>
+                <label>Value</label>
+                <input type="number" />
+            </fieldset>
+            <fieldset>
+                <label>Color</label>
+                <input type="color" />
+            </fieldset>
+            <input type="submit" />
+        </form>
+        <ul id="active_data" data-bind="foreach: sampleData">
+            <li>
+                <p>Score: <span data-bind="text: score"></span></p>
+            </li>
+        </ul>
+        <svg id="svg_donut" width="600" height="400">
+        </svg>
         <!--Javascript-->
+        <script type="text/javascript" src="../js/jquery.js"></script>
+        <script type="text/javascript" src="../js/knockout.js"></script>
         <script src="js/d3.js"></script>
         <script src="js/d3-piechart.js"></script>
         <script type="text/javascript">
             d3test('svg_donut');
+            ko.applyBindings(sampleData);
         </script>
     </body>
 </html>

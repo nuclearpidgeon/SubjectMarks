@@ -1,0 +1,21 @@
+body {
+	font-family: Helvetica, Arial, sans-serif;
+	width: 60%;
+	margin: 0 auto;
+}
+h1 {
+	text-align: center;
+}
+form {
+	float: left;
+}
+#active_data {
+	float: right;
+}
+fieldset {
+	border: 0;
+}
+svg {
+	display: block;
+	margin: 0 auto;
+}
