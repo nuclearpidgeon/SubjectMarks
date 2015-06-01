@@ -6,7 +6,7 @@ var colors = { // bootstrap colors (http://getbootstrap.com/customize/#colors)
 	"warning": "#f0ad4e"
 };
 
-var sampleData = [
+var sampleData = ko.observableArray([
 		{
 			"score": 10,
 			"max": 20,
@@ -37,8 +37,7 @@ var sampleData = [
 			"max": 30,
 			"color": "#911"
 		}
-
-	];
+	]);
 
 function d3test(identifier) {
 	var innerArc = function(){
@@ -63,20 +62,20 @@ function d3test(identifier) {
 	var weightingPie = d3.layout.pie()
 		.value(function(d) { return d.max }); // object accessor
 	var weightingArcs = weightings.selectAll("g.weighting-arc")
-		.data(weightingPie(sampleData));
+		.data(weightingPie(sampleData()));
 	// create
 	var enterGroup = weightingArcs.enter().append("g").attr("class", "weighting-arc");
-	enterGroup.append("text")
-		.text(function(d, i) { return i + "(" + d.data.max + ")"; })
-		.attr("transform", function(d, i) {
-			var theta = d.startAngle + (d.endAngle - d.startAngle)/2;
-			return "translate(" + Math.sin(theta)*150 + "," + -Math.cos(theta)*150 + ")";
-			});
 	enterGroup.append("path")
 		.attr("fill", function(d, i) {
 				console.log(d);
 		        return d.data.color;
 		    });
+	enterGroup.append("text")
+		.text(function(d, i) { return i + "(" + d.data.max + ")"; })
+		.attr("transform", function(d, i) {
+			return "translate(" + innerArc().centroid(d) + ")";
+			})
+		.attr("dy", "0.35em");
 	// update
 	weightingArcs
 		.selectAll("path")

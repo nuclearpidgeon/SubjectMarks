@@ -19,3 +19,8 @@ svg {
 	display: block;
 	margin: 0 auto;
 }
+svg .weighting-arc text {
+	text-anchor: middle;
+	font-size: 0.75em;
+	color: #ffffff;
+}
