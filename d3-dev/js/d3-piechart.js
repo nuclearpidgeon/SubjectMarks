@@ -7,37 +7,37 @@ var colors = { // bootstrap colors (http://getbootstrap.com/customize/#colors)
 };
 
 var sampleData = ko.observableArray([
-		{
-			"score": 10,
-			"max": 20,
-			"color": colors["danger"]
-		},
-		{
-			"score": 15,
-			"max": 20,
-			"color": colors["info"]
-		},
-		{
-			"score": 10,
-			"max": 30,
-			"color": colors["success"]
-		},
-		{
-			"score": 10,
-			"max": 30,
-			"color": colors["primary"]
-		},
-		{
-			"score": 10,
-			"max": 30,
-			"color": colors["warning"]
-		},
-		{
-			"score": 10,
-			"max": 30,
-			"color": "#911"
-		}
-	]);
+	{
+		"score": 10,
+		"max": 20,
+		"color": colors["danger"]
+	},
+	{
+		"score": 15,
+		"max": 20,
+		"color": colors["info"]
+	},
+	{
+		"score": 10,
+		"max": 30,
+		"color": colors["success"]
+	},
+	{
+		"score": 10,
+		"max": 30,
+		"color": colors["primary"]
+	},
+	{
+		"score": 10,
+		"max": 30,
+		"color": colors["warning"]
+	},
+	{
+		"score": 10,
+		"max": 30,
+		"color": "#911"
+	}
+]);
 
 function d3test(identifier) {
 	var innerArc = function(){
@@ -87,10 +87,26 @@ function d3test(identifier) {
 
 	var scores = chart.append("g")
 		.attr("class", "scores");
-	// var scoreArcs = scores.selectAll("g.score-arc")
-	//     .data(scorePie(sampleData));
-
 }
+
+$('#addData').on('click', function() {
+	var form = $(this).closest('form');
+	var newData = {
+		"score": form.find('.new-score input').val(),
+		"max"  : form.find('.new-max input').val(),
+		"color": form.find('.new-color input').val()
+	}
+	sampleData.push(newData);
+	return false;
+});
+
+$(function() {
+	ko.applyBindings(sampleData);
+	sampleData.subscribe(function() {
+		d3test('svg_donut');
+	});
+	d3test('svg_donut');
+});
 
 d3.layout.pie2 = function() {
 	var value      = Number,

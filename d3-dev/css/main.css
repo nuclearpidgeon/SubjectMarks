@@ -7,13 +7,25 @@ h1 {
 	text-align: center;
 }
 form {
+	display: table;
 	float: left;
+}
+form fieldset {
+	display: table-row;
+}
+form fieldset * {
+	display: table-cell;
 }
 #active_data {
 	float: right;
 }
 fieldset {
 	border: 0;
+}
+.data-color {
+	display: inline-block;
+	width: 10px;
+	height: 10px;
 }
 svg {
 	display: block;
