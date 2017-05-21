@@ -23,20 +23,28 @@
                 <label>Color</label>
                 <input type="color" />
             </fieldset>
+            <fieldset class="new-color">
+                <label>Weighting</label>
+                <input type="number" />
+            </fieldset>
             <button id="addData">Add new data</button>
         </form>
         <ul id="active_data" data-bind="foreach: sampleData">
             <li>
-                <p><span class="data-color" data-bind="style: { backgroundColor: color }"></span> <span data-bind="text: score"></span>/<span data-bind="text: max"></span></p>
+                <p><span class="data-color" data-bind="style: { backgroundColor: color }"></span> <span data-bind="text: score"></span>/<span data-bind="text: max"></span> (<span data-bind="text: weighting"></span>%)</p>
 
             </li>
         </ul>
         <svg id="svg_donut" width="600" height="400">
+            <g class="chart" transform="translate(250,200)">
+                <g class="scores"></g>
+                <g class="weightings"></g>
+            </g>
         </svg>
         <!--Javascript-->
         <script type="text/javascript" src="../js/jquery.js"></script>
         <script type="text/javascript" src="../js/knockout.js"></script>
         <script src="js/d3.js"></script>
-        <script src="js/d3-piechart.js"></script>
+        <script src="js/d3-piechart-test.js"></script>
     </body>
 </html>
