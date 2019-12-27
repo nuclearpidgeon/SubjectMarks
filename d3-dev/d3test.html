@@ -28,6 +28,9 @@
                 <input type="number" />
             </fieldset>
             <button id="addData">Add new data</button>
+            <div>
+                <input type="checkbox" data-bind="checked: groupByEarntLostMode" /> Group by earnt/lost
+            </div>
         </form>
         <ol id="active_data" data-bind="foreach: sampleData">
             <li>
@@ -40,7 +43,8 @@
         </ol>
         <svg id="svg_donut" width="600" height="400">
             <g class="chart" transform="translate(250,200)">
-                <g class="scores"></g>
+                <g class="score-totals"></g>
+                <g class="mark-chunks"></g>
                 <g class="weightings"></g>
             </g>
         </svg>
