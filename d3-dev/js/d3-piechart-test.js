@@ -113,7 +113,7 @@ function d3test(identifier) {
 		    .attr("d", weightingArc());
     weightingArcs
     	.select("text")
-			.text(function(d, i) { return "#" + i + " worth " + d.data.weighting + "%"; })
+			.text(function(d, i) { return "#" + (i+1) + " worth " + d.data.weighting + "%"; })
 			.attr("transform", function(d, i) {
 				return "translate(" + weightingArc().centroid(d) + ")";
 				})

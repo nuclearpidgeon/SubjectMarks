@@ -29,7 +29,7 @@
             </fieldset>
             <button id="addData">Add new data</button>
         </form>
-        <ul id="active_data" data-bind="foreach: sampleData">
+        <ol id="active_data" data-bind="foreach: sampleData">
             <li>
                 <p>
                     <span class="data-color" data-bind="style: { backgroundColor: color }"></span>
@@ -37,7 +37,7 @@
                     <button data-bind="click: $parent.removeDatum">x</button>
                 </p>
             </li>
-        </ul>
+        </ol>
         <svg id="svg_donut" width="600" height="400">
             <g class="chart" transform="translate(250,200)">
                 <g class="scores"></g>
