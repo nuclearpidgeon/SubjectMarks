@@ -33,6 +33,13 @@ var sampleData = ko.observableArray([
 	}
 ]);
 
+var viewModel = {
+	sampleData: sampleData,
+	removeDatum: function(el) {
+		sampleData.remove(el);
+	}
+}
+
 var getEarntLostArray = function() {
 	var currentData = sampleData();
 	var output = [];
@@ -172,7 +179,7 @@ $('#addData').on('click', function() {
 });
 
 $(function() {
-	ko.applyBindings(sampleData);
+	ko.applyBindings(viewModel);
 	sampleData.subscribe(function() {
 		d3test('svg_donut');
 	});

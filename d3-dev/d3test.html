@@ -31,8 +31,11 @@
         </form>
         <ul id="active_data" data-bind="foreach: sampleData">
             <li>
-                <p><span class="data-color" data-bind="style: { backgroundColor: color }"></span> <span data-bind="text: score"></span>/<span data-bind="text: max"></span> (<span data-bind="text: weighting"></span>%)</p>
-
+                <p>
+                    <span class="data-color" data-bind="style: { backgroundColor: color }"></span>
+                    <span data-bind="text: score"></span>/<span data-bind="text: max"></span> (<span data-bind="text: weighting"></span>%) 
+                    <button data-bind="click: $parent.removeDatum">x</button>
+                </p>
             </li>
         </ul>
         <svg id="svg_donut" width="600" height="400">
