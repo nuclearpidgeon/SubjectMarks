@@ -89,10 +89,20 @@ var weightingArc = function() {
 		.innerRadius(110)
 		.outerRadius(150)
 }
+weightingArc.newArc = function() {
+	return d3.svg.arc()
+		.innerRadius(165)
+		.outerRadius(205)
+}
 var scoresArc = function() {
 	return d3.svg.arc()
 		.innerRadius(150)
 		.outerRadius(165)
+}
+scoresArc.newArc = function() {
+	return d3.svg.arc()
+		.innerRadius(205)
+		.outerRadius(220)
 }
 // pseudo-arc for centering labels correctly
 var labelsArc = function() {
@@ -101,6 +111,40 @@ var labelsArc = function() {
 		.outerRadius(165)
 }
 
+// define tween for animating arcs
+// lovingly stolen and modified from http://bl.ocks.org/mbostock/5100636
+function makeArcAngleChangeTween(oldStartAngle, oldEndAngle, newStartAngle, newEndAngle, arcFunc) {
+	// The actual tween is a function invoked per-datum
+	return function(d) {
+		// Setup interpolators for the start and end angles
+		var interpolateStartAngle = d3.interpolate(oldStartAngle, newStartAngle);
+		var interpolateEndAngle = d3.interpolate(oldEndAngle, newEndAngle);
+
+		// Surprise: the tween itself also returns a function that's actually
+		// an interpolator for the tween. This function returns the new
+		// version of the datum for each timestep t ∈ (0, 1)
+		return function(t) {
+			d.startAngle = interpolateStartAngle(t);
+			d.endAngle = interpolateEndAngle(t);
+
+			return arcFunc(d);
+		};
+	};
+}
+function makeArcRadiusChangeTween(oldInnerRadius, oldOuterRadius, newInnerRadius, newOuterRadius, arcFunc) {
+	return function(d) {
+		// Setup interpolators for the start and end radius
+		var interpolateInnerRadius = d3.interpolate(oldInnerRadius, newInnerRadius);
+		var interpolateOuterRadius = d3.interpolate(oldOuterRadius, newOuterRadius);
+
+		return function(t) {
+			d.innerRadius = interpolateInnerRadius(t);
+			d.outerRadius = interpolateOuterRadius(t);
+
+			return arcFunc(d);
+		};
+	};
+}
 
 function subjectDataDoublePieChart(identifier) {
 	var vis = d3.select("#"+identifier);
@@ -153,18 +197,166 @@ function subjectDataDoublePieChart(identifier) {
 		markChunkPieLayout.sort(null)
 	}
 
+	// snapshot the current data for transition calculations
+	var priorArcGroupData = markChunksContainer.selectAll("g.mark-chunk")
+		.data()
+	// calculate the new data for binding + transition calculations
+	var newArcGroupData = markChunkPieLayout(currentEarntLostData.markChunks);
 	// bind an SVG group element to each slice of the mark chunk pie
 	var markChunkArcGroups = markChunksContainer.selectAll("g.mark-chunk")
-		.data(markChunkPieLayout(currentEarntLostData.markChunks));
+		.data(newArcGroupData);
 
-	// define setup of new elements for new data
-	var newMarkChunkGroups = markChunkArcGroups.enter()
-	var newMarkChunkGroup = newMarkChunkGroups.append("g")
-		.attr("class", "mark-chunk");
-	newMarkChunkGroup.append("path")
-		.attr("class", "weighting-arc");
-	newMarkChunkGroup.append("path")
-		.attr("class", "score-arc");
+	var entryMarkChunkArcGroups = markChunkArcGroups.enter()
+	var exitingMarkChunkArcGroups = markChunkArcGroups.exit();
+
+	function insertEntryElements() {
+		// define setup of new elements for new data
+		var newMarkChunkGroups = entryMarkChunkArcGroups.append("g")
+			.attr("class", "mark-chunk")
+			.style("opacity", 0);
+		newMarkChunkGroups.append("path")
+			.attr("class", "weighting-arc")
+			.attr("d", weightingArc.newArc());
+		newMarkChunkGroups.append("path")
+			.attr("class", "score-arc")
+			.attr("d", scoresArc.newArc());
+
+		var actualNewGroups = newMarkChunkGroups[0].filter(function(e) { return (e !== null) })
+		console.log("insertion triggered, " + actualNewGroups.length + " mark chunk groups added", actualNewGroups)
+		// return the groups so they can be used for selection
+		return newMarkChunkGroups;
+	}
+
+	function defineUpdateTransitions(updateTransition) {
+		updateTransition.each(function() {
+			var updateTransitions = markChunkArcGroups.transition()
+			updateTransitions
+				.each(function(d, i) {
+					// TODO: need to be able to match between subjects using a
+					// better unique identifier than array index!
+
+					// safety check for removal cases
+					if (i < priorArcGroupData.length) {
+						var priorArcDatum = priorArcGroupData[i]
+						var newArcDatum = newArcGroupData[i]
+						// safety check for insert case
+						if (newArcDatum) {
+							var arcGroup = d3.select(this)
+							arcGroup
+								.select("path.weighting-arc")
+								.transition()
+									.attrTween("d", makeArcAngleChangeTween(
+										priorArcDatum.startAngle, priorArcDatum.endAngle,
+										newArcDatum.startAngle, newArcDatum.endAngle,
+										weightingArc()
+									))
+							arcGroup
+								.select("path.score-arc")
+								.transition()
+									.attrTween("d", makeArcAngleChangeTween(
+										priorArcDatum.startAngle, priorArcDatum.endAngle,
+										newArcDatum.startAngle, newArcDatum.endAngle,
+										scoresArc()
+									))
+						}
+						else {
+							// wat do here?? need to test if this case is safe to
+							// ignore and expect to be caught by .entry() elsewhere
+							console.log("no new arc datum found for mark chunk at idx " + i, this)
+						}
+					}
+					else {
+						// wat do here?? need to test if this case is safe to
+						// ignore and expect to be caught by .exit() elsewhere
+						console.log("no prior arc datum found for mark chunk at idx " + i, this)
+					}
+				})
+		})
+	}
+
+	function defineInsertFadeInTransitions(parentTransition, newElements) {
+		parentTransition.each(function() {
+			var insertFadeInTransitions = newElements.transition()
+			insertFadeInTransitions
+				.style("opacity", 0.5)
+		})
+	}
+
+	function defineInsertSlotInTransitions(parentTransition, newElements) {
+		parentTransition.each(function() {
+			var insertSlotInTransitions = newElements.transition()
+			insertSlotInTransitions
+				.style("opacity", 1)
+			insertSlotInTransitions
+				.select("path.weighting-arc")
+					.attrTween("d", makeArcRadiusChangeTween(165, 205, 110, 150, d3.svg.arc()));
+			insertSlotInTransitions
+				.select("path.score-arc")
+					.attrTween("d", makeArcRadiusChangeTween(205, 220, 150, 165, d3.svg.arc()));
+		})
+	}
+
+	if (!exitingMarkChunkArcGroups.empty()) {
+		// elements need to be removed. do the removal first as a separate
+		// transition before beginning the update/add process
+		var exitTransition = markChunksContainer
+			.transition()
+			.duration(750)
+		exitTransition.each(function() {
+			var exitTransitions = exitingMarkChunkArcGroups.transition()
+			exitTransitions
+				.select("path.weighting-arc")
+					.attrTween("d", makeArcRadiusChangeTween(110, 150, 0, 40, d3.svg.arc()))
+					.style("opacity", 0)
+			exitTransitions
+				.select("path.score-arc")
+					.attrTween("d", makeArcRadiusChangeTween(150, 165, 40, 55, d3.svg.arc()))
+					.style("opacity", 0)
+			// remove the groups at the end to clean up all the elements
+			exitTransitions
+				.remove()
+		})
+
+		exitTransition.each('end', function(){
+			var newMarkChunkGroups = insertEntryElements()
+
+			// update transition is step 2 and this should follow exit transition
+			var updateTransition = markChunksContainer
+				.transition()
+				.duration(750)
+
+			// update cases are to be handled/setup first
+			//
+			// doing .append() for new nodes causes them to be merged into the
+			// update selection
+			//
+			// with any luck, the selection used at this point will properly grab
+			// only update nodes because it is being invoked ahead of the
+			// transitions actually executing...
+			defineUpdateTransitions(updateTransition)
+			defineInsertFadeInTransitions(updateTransition, newMarkChunkGroups)
+
+			var slotInTransition = updateTransition
+				.transition()
+				.duration(750)
+			defineInsertSlotInTransitions(slotInTransition, newMarkChunkGroups)
+		})
+	}
+	else {
+		// nothing to remove - just do the entry cases
+		var newMarkChunkGroups = insertEntryElements()
+
+		var updateTransition = markChunksContainer
+			.transition()
+			.duration(750)
+		defineUpdateTransitions(updateTransition)
+		defineInsertFadeInTransitions(updateTransition, newMarkChunkGroups)
+
+		var slotInTransition = updateTransition
+			.transition()
+			.duration(750)
+		defineInsertSlotInTransitions(slotInTransition, newMarkChunkGroups)
+	}
 
 	// update all arcs with attributes based off data
 	markChunkArcGroups
@@ -172,18 +364,14 @@ function subjectDataDoublePieChart(identifier) {
 			.attr("fill", function(d, i) {
 			        return d.data.color;
 			    })
-			.attr("d", weightingArc());
+			// .attr("d", weightingArc());
 	markChunkArcGroups
 		.select("path.score-arc")
 			.attr("fill", function(d, i) {
 					return d.data.isEarntMarks ? colors["success"] : colors["danger"];
 				})
-		    .attr("d", scoresArc());
+		    // .attr("d", scoresArc());
 
-    // remove elements bound to removed/exiting data
-    markChunkArcGroups
-    	.exit()
-		.remove();
 
 
 	// Second set of data-driven elements: Weightings (full/unsplit)
@@ -197,7 +385,8 @@ function subjectDataDoublePieChart(identifier) {
 	var weightingsContainer = chart.select(".weightings");
 
 	// Only show any of the full weightings when grouping by weighting
-	weightingsContainer.attr("display", groupingByEarntLost ? 'none' : null)
+	// weightingsContainer.attr("display", groupingByEarntLost ? 'none' : null)
+	weightingsContainer.attr("display", 'none')
 
 	var weightingPieLayout = d3.layout.pie()
 	weightingPieLayout.value(function(d) {
