@@ -6,7 +6,7 @@ var colors = { // bootstrap colors (http://getbootstrap.com/customize/#colors)
 	"warning": "#f0ad4e"
 };
 
-var sampleData = ko.observableArray([
+var sampleData = [
 	{
 		"score": 15,
 		"max": 20,
@@ -31,12 +31,17 @@ var sampleData = ko.observableArray([
 		"weighting": 50,
 		"color": "#911"
 	}
-]);
+];
+
+var subjectData = ko.observableArray();
+
+// start out with sample data for testing with
+ko.utils.arrayPushAll(subjectData, sampleData);
 
 var viewModel = {
-	sampleData: sampleData,
+	subjectData: subjectData,
 	removeDatum: function(el) {
-		sampleData.remove(el);
+		subjectData.remove(el);
 	},
 	groupByEarntLostMode: ko.observable(false)
 }
@@ -77,7 +82,7 @@ var makeEarntLostData = function(subjectData) {
 	};
 }
 
-function d3test(identifier) {
+function subjectDataDoublePieChart(identifier) {
 	var weightingArc = function(){
 		return d3.svg.arc() 
 		.innerRadius(110) 
@@ -93,29 +98,31 @@ function d3test(identifier) {
 		return d3.svg.arc() 
 			.innerRadius(110)
 			.outerRadius(165)
-}
-	var myScale = d3.scale.linear().domain([0, 100]).range([0, 2 * Math.PI]);
+	}
 
 	var vis = d3.select("#"+identifier);
 	var chart = vis.select(".chart")
-	var currentSubjectData = sampleData();
+
+	var currentSubjectData = subjectData();
 	var currentEarntLostData = makeEarntLostData(currentSubjectData);
 	var groupingByEarntLost = viewModel.groupByEarntLostMode()
 
+	// First set of data-driven elements: Mark Chunks
+	//
+	// The mark chunk pie lays out two elements/values for each subject
+	// - one for marks earnt and one for marks lost
+	
 	var markChunksContainer = chart.select(".mark-chunks");
 
-	// the mark chunk pie layout lays out two elements/values for each subject
-	// - one for marks earnt and one for marks lost
-
-	var markChunkPie = d3.layout.pie()
-	markChunkPie.value(function(d) {
+	var markChunkPieLayout = d3.layout.pie()
+	markChunkPieLayout.value(function(d) {
 		// Use the amount of marks earnt or lost as the value for each wedge
 		// in the pie
 		return d.value
 	});
 	if (groupingByEarntLost) {
 		// sort the data such that all the earnt marks come first
-		markChunkPie.sort(function(a, b) {
+		markChunkPieLayout.sort(function(a, b) {
 			if (a.isEarntMarks) {
 				if (b.isEarntMarks) {
 					// order by index
@@ -140,28 +147,23 @@ function d3test(identifier) {
 	}
 	else {
 		// don't sort, show in subject order
-		markChunkPie.sort(null)
+		markChunkPieLayout.sort(null)
 	}
 
-
+	// bind an SVG group element to each slice of the mark chunk pie
 	var markChunkArcGroups = markChunksContainer.selectAll("g.mark-chunk")
-		.data(markChunkPie(currentEarntLostData.markChunks));
+		.data(markChunkPieLayout(currentEarntLostData.markChunks));
 
-	// define logic for new/'entering' data points
-	// ===========================================
-
+	// define setup of new elements for new data
 	var newMarkChunkGroups = markChunkArcGroups.enter()
-
-	// set up top-level SVG group element
 	var newMarkChunkGroup = newMarkChunkGroups.append("g")
 		.attr("class", "mark-chunk");
-
 	newMarkChunkGroup.append("path")
 		.attr("class", "weighting-arc");
 	newMarkChunkGroup.append("path")
 		.attr("class", "score-arc");
 
-	// update all arcs
+	// update all arcs with attributes based off data
 	markChunkArcGroups
 		.select("path.weighting-arc")
 			.attr("fill", function(d, i) {
@@ -175,43 +177,47 @@ function d3test(identifier) {
 				})
 		    .attr("d", scoresArc());
 
-    // delete
+    // remove elements bound to removed/exiting data
     markChunkArcGroups
     	.exit()
 		.remove();
 		
-	// full (non-split) weightings
+
+	// Second set of data-driven elements: Weightings (full/unsplit)
+	//
+	// When viewing in group-by-subject mode, the earnt and lost mark chunks
+	// within a given subject appear with a tiny gap between them. Keeping a
+	// set of full arcs for each weighting on hand to display in this mode
+	// (when not animating) makes the graph look nicer and allows for having
+	// more consistent per-subject UI elements
 
 	var weightingsContainer = chart.select(".weightings");
+
+	// Only show any of the full weightings when grouping by weighting
 	weightingsContainer.attr("display", groupingByEarntLost ? 'none' : null)
 
-	var weightingPie = d3.layout.pie()
-	weightingPie.value(function(d) {
-		// the size of each pie slice should be determined
-		// by the amount each assessment item contributes to
-		// the overall score
-		//
-		// for this test example just use the 'max' and assume
-		// each assessment item is weighted equally
+	var weightingPieLayout = d3.layout.pie()
+	weightingPieLayout.value(function(d) {
+		// weighting pie expects to be bound to subject data - the size of each
+		// pie slice should be determined by the subject's weighting
 		return d.weighting
 	});
-	weightingPie.sort(null) // don't sort the values so we can reliably get the scores to show up in line
+	// don't sort the values so we can reliably get the pie slices to show up
+	// in order
+	weightingPieLayout.sort(null)
+
+	// bind
 	var weightingArcGroups = weightingsContainer.selectAll("g.weighting-arc")
-		.data(weightingPie(currentSubjectData));
+		.data(weightingPieLayout(currentSubjectData));
 
-	// define logic for new/'entering' data points
-	// ===========================================
-
+	// create/setup
 	var newWeightingGroups = weightingArcGroups.enter()
-
-	// set up top-level SVG group element
 	var newWeightingGroup = newWeightingGroups.append("g")
 		.attr("class", "weighting-arc");
-
 	newWeightingGroup.append("path");
 	newWeightingGroup.append("text");
 
-	// update all arcs
+	// update
 	weightingArcGroups
 		.select("path")
 			.attr("fill", function(d, i) {
@@ -232,19 +238,26 @@ function d3test(identifier) {
     	.remove();
 
 
-	// scores
+	// Third set of data-driven elements: Earnt/Lost totals (full/unsplit)
+	//
+	// Same as full weightings but for the flip case of the earnt/lost totals
+	// in group by earnt/lost mode
 
 	var scoreTotalsContainer = chart.select(".score-totals");
+
+	// Only show any of the full earnt/lost totals when grouping by them
 	scoreTotalsContainer.attr("display", groupingByEarntLost ? null : 'none')
 
-	var scoreTotalsPie = d3.layout.pie();
-	scoreTotalsPie.value(function(d) {
+	var scoreTotalsPieLayout = d3.layout.pie();
+	scoreTotalsPieLayout.value(function(d) {
 		return d.value
 	})
-	scoreTotalsPie.sort(null); // don't sort
+	// don't sort
+	scoreTotalsPieLayout.sort(null);
 
+	// bind
 	var scoresArcGroups = scoreTotalsContainer.selectAll("g.score-arc")
-		.data(scoreTotalsPie(
+		.data(scoreTotalsPieLayout(
 			[{
 				value: currentEarntLostData.totalEarnt,
 				isEarntMarks: true
@@ -254,14 +267,13 @@ function d3test(identifier) {
 			}]
 		));
 
-	var newScoreGroup = scoresArcGroups.enter()
-
-	var newScoreGroup = newScoreGroup.append("g")
+	// setup
+	var newScoreGroups = scoresArcGroups.enter()
+	var newScoreGroup = newScoreGroups.append("g")
 		.attr("class", "score-arc");
-
 	newScoreGroup.append("path");
 
-	// update all scores
+	// update
 	scoresArcGroups
 		.select("path")
 			.attr("fill", function(d, i) {
@@ -286,69 +298,17 @@ $('#addData').on('click', function() {
 		"color": form.find('.new-color input').val(),
 		"weighting": form.find('.new-weighting input').val()
 	}
-	sampleData.push(newData);
+	subjectData.push(newData);
 	return false;
 });
 
 $(function() {
 	ko.applyBindings(viewModel);
 	var updateGraph = function() {
-		d3test('svg_donut');
+		subjectDataDoublePieChart('svg_donut');
 	};
-	sampleData.subscribe(updateGraph);
+	subjectData.subscribe(updateGraph);
 	viewModel.groupByEarntLostMode.subscribe(updateGraph);
 	
 	updateGraph();
 });
-
-d3.layout.scorePie = function() {
-	var value      = Number,
-	    sort       = d3_layout_pieSortByValue,
-	    startAngle = 0,
-	    endAngle   = τ;
-	function pie(data) {
-		var values = data.map(function(d, i) {
-			return +value.call(pie, d, i);
-		});
-		var a = +(typeof startAngle === "function" ? startAngle.apply(this, arguments) : startAngle);
-		var k = ((typeof endAngle === "function" ? endAngle.apply(this, arguments) : endAngle) - a) / d3.sum(values);
-		var index = d3.range(data.length);
-		if (sort != null) index.sort(sort === d3_layout_pieSortByValue ? function(i, j) {
-			return values[j] - values[i];
-		} : function(i, j) {
-			return sort(data[i], data[j]);
-		});
-		var arcs = [];
-		index.forEach(function(i) {
-			var d;
-			arcs[i] = {
-				data: data[i],
-				value: d = values[i],
-				startAngle: a,
-				endAngle: a += d * k
-			};
-		});
-		return arcs;
-	}
-	pie.value = function(x) {
-		if (!arguments.length) return value;
-		value = x;
-		return pie;
-	};
-	pie.sort = function(x) {
-		if (!arguments.length) return sort;
-		sort = x;
-		return pie;
-	};
-	pie.startAngle = function(x) {
-		if (!arguments.length) return startAngle;
-		startAngle = x;
-		return pie;
-	};
-	pie.endAngle = function(x) {
-		if (!arguments.length) return endAngle;
-		endAngle = x;
-		return pie;
-	};
-	return pie;
-};
