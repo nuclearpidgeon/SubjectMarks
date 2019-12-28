@@ -82,24 +82,27 @@ var makeEarntLostData = function(subjectData) {
 	};
 }
 
-function subjectDataDoublePieChart(identifier) {
-	var weightingArc = function(){
-		return d3.svg.arc() 
-		.innerRadius(110) 
-		.outerRadius(150)
-	}
-	var scoresArc = function(){
-		return d3.svg.arc() 
-		.innerRadius(150) 
-		.outerRadius(165) 
-	}
-	// pseudo-arc for centering labels correctly
-	var labelsArc = function(){
-		return d3.svg.arc() 
-			.innerRadius(110)
-			.outerRadius(165)
-	}
+// define arc drawing functions
 
+var weightingArc = function() {
+	return d3.svg.arc()
+		.innerRadius(110)
+		.outerRadius(150)
+}
+var scoresArc = function() {
+	return d3.svg.arc()
+		.innerRadius(150)
+		.outerRadius(165)
+}
+// pseudo-arc for centering labels correctly
+var labelsArc = function() {
+	return d3.svg.arc()
+		.innerRadius(110)
+		.outerRadius(165)
+}
+
+
+function subjectDataDoublePieChart(identifier) {
 	var vis = d3.select("#"+identifier);
 	var chart = vis.select(".chart")
 
@@ -111,7 +114,7 @@ function subjectDataDoublePieChart(identifier) {
 	//
 	// The mark chunk pie lays out two elements/values for each subject
 	// - one for marks earnt and one for marks lost
-	
+
 	var markChunksContainer = chart.select(".mark-chunks");
 
 	var markChunkPieLayout = d3.layout.pie()
@@ -181,7 +184,7 @@ function subjectDataDoublePieChart(identifier) {
     markChunkArcGroups
     	.exit()
 		.remove();
-		
+
 
 	// Second set of data-driven elements: Weightings (full/unsplit)
 	//
@@ -309,6 +312,6 @@ $(function() {
 	};
 	subjectData.subscribe(updateGraph);
 	viewModel.groupByEarntLostMode.subscribe(updateGraph);
-	
+
 	updateGraph();
 });
