@@ -6,6 +6,15 @@ var colors = { // bootstrap colors (http://getbootstrap.com/customize/#colors)
 	"warning": "#f0ad4e"
 };
 
+var idGenerator = (function() {
+	var internalId = 0;
+	var external = function() {
+		return ++internalId;
+	}
+	Object.defineProperty(external, 'currentVal', { get: function() { return internalId; } });
+	return external
+})()
+
 var sampleData = [
 	{
 		"score": 15,
@@ -35,8 +44,12 @@ var sampleData = [
 
 var subjectData = ko.observableArray();
 
-// start out with sample data for testing with
-ko.utils.arrayPushAll(subjectData, sampleData);
+// start out with the sample data for testing with
+for(var i = 0; i < sampleData.length; i++) {
+	var datum = sampleData[i]
+	datum.id = idGenerator()
+	subjectData.push(datum)
+}
 
 var viewModel = {
 	subjectData: subjectData,
@@ -60,15 +73,20 @@ var makeEarntLostData = function(subjectData) {
 		var percentageEarnt = ((subject.score / subject.max) * subject.weighting);
 		var percentageLost = (((subject.max - subject.score) / subject.max) * subject.weighting);
 
+		// XXX: it might be worth making these objects more definedly typed by
+		// giving them a prototype at some point, but plain objects are used
+		// for now
 		markChunks.push({
-			"subjectIdx": i,
+			"subjectId": subject.id,
+			"subjectIndex": i,
 			"color": subject.color,
 			"isEarntMarks": true,
 			"value": percentageEarnt,
 			"weighting": subject.weighting
 		});
 		markChunks.push({
-			"subjectIdx": i,
+			"subjectId": subject.id,
+			"subjectIndex": i,
 			"color": subject.color,
 			"isEarntMarks": false,
 			"value": percentageLost,
@@ -88,7 +106,7 @@ function earntLostGroupingMarkChunkComparator(a, b) {
 	if (a.isEarntMarks) {
 		if (b.isEarntMarks) {
 			// order by index
-			return a.subjectIdx - b.subjectIdx
+			return a.subjectIndex - b.subjectIndex
 		}
 		else {
 			// a should be first because it is earnt
@@ -102,7 +120,7 @@ function earntLostGroupingMarkChunkComparator(a, b) {
 		}
 		else {
 			// order by index
-			return a.subjectIdx - b.subjectIdx
+			return a.subjectIndex - b.subjectIndex
 		}
 	}
 }
@@ -489,6 +507,7 @@ function subjectDataDoublePieChart(identifier) {
 $('#addData').on('click', function() {
 	var form = $(this).closest('form');
 	var newData = {
+		"id": idGenerator(),
 		"score": form.find('.new-score input').val(),
 		"max"  : form.find('.new-max input').val(),
 		"color": form.find('.new-color input').val(),
