@@ -359,10 +359,12 @@ function subjectDataDoublePieChart(identifier) {
 				.remove()
 		})
 
+		// update transition is step 2 and should follow exit transition
 		exitTransition.each('end', function(){
+			// First do the new element insertion
 			var newMarkChunkGroups = insertEntryElements()
 
-			// update transition is step 2 and this should follow exit transition
+			// define a new transition for everything in the update step
 			var updateTransition = markChunksContainer
 				.transition()
 				.duration(750)
@@ -378,6 +380,7 @@ function subjectDataDoublePieChart(identifier) {
 			defineUpdateTransitions(updateTransition)
 			defineInsertFadeInTransitions(updateTransition, newMarkChunkGroups)
 
+			// slot in transition should come third/final
 			var slotInTransition = updateTransition
 				.transition()
 				.duration(750)
