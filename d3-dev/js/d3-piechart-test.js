@@ -125,6 +125,12 @@ function earntLostGroupingMarkChunkComparator(a, b) {
 	}
 }
 
+// XXX: this might be worth moving into a prototype on the mark chunk objects at some point
+function earntLostMarkChunkId(markChunk) {
+	// use ID field combined with earnt/lost type as a unique identifier
+	return markChunk.subjectId.toString() + (markChunk.isEarntMarks ? '+' : '-')
+}
+
 // define arc drawing functions
 
 var weightingArc = function() {
@@ -226,7 +232,9 @@ function subjectDataDoublePieChart(identifier) {
 	var newArcGroupData = markChunkPieLayout(currentEarntLostData.markChunks);
 	// bind an SVG group element to each slice of the mark chunk pie
 	var markChunkArcGroups = markChunksContainer.selectAll("g.mark-chunk")
-		.data(newArcGroupData);
+		.data(newArcGroupData, function(d, i) {
+			return earntLostMarkChunkId(d.data)
+		});
 
 	var entryMarkChunkArcGroups = markChunkArcGroups.enter()
 	var exitingMarkChunkArcGroups = markChunkArcGroups.exit();
@@ -257,39 +265,51 @@ function subjectDataDoublePieChart(identifier) {
 					// TODO: need to be able to match between subjects using a
 					// better unique identifier than array index!
 
-					// safety check for removal cases
-					if (i < priorArcGroupData.length) {
-						var priorArcDatum = priorArcGroupData[i]
-						var newArcDatum = newArcGroupData[i]
-						// safety check for insert case
-						if (newArcDatum) {
-							var arcGroup = d3.select(this)
-							arcGroup
-								.select("path.weighting-arc")
-								.transition()
-									.attrTween("d", makeArcAngleChangeTween(
-										priorArcDatum.startAngle, priorArcDatum.endAngle,
-										newArcDatum.startAngle, newArcDatum.endAngle,
-										weightingArc()
-									))
-							arcGroup
-								.select("path.score-arc")
-								.transition()
-									.attrTween("d", makeArcAngleChangeTween(
-										priorArcDatum.startAngle, priorArcDatum.endAngle,
-										newArcDatum.startAngle, newArcDatum.endAngle,
-										scoresArc()
-									))
+					// Only existing chunks in the graph should be angle
+					// tweened - i.e. NOT chunks from the entry selection.
+					//
+					// At this point, appending to the entry selection has
+					// (most likely) occurred, so the chunks that should only
+					// be updated have to be found again, because
+					// .entry().append() in d3 v3 causes the new appended
+					// elements to get merged back into its original/parent
+					// selection (see 'Removing the magic of enter.append in
+					// this article: https://medium.com/@mbostock/what-makes-software-good-943557f8a488)
+
+					var currentChunkId = earntLostMarkChunkId(d.data);
+					var priorArcDatum = undefined;
+
+					for (var i = 0; i < priorArcGroupData.length; i++) {
+						if (currentChunkId == earntLostMarkChunkId(priorArcGroupData[i].data)) {
+							priorArcDatum = priorArcGroupData[i]
 						}
-						else {
-							// wat do here?? need to test if this case is safe to
-							// ignore and expect to be caught by .entry() elsewhere
-							console.log("no new arc datum found for mark chunk at idx " + i, this)
-						}
+					}
+
+					if (priorArcDatum !== undefined) {
+						// This point is supposed to represent handling of
+						// an 'update' element - i.e. one that already
+						// existed before the current data change
+						var arcGroup = d3.select(this)
+						arcGroup
+							.select("path.weighting-arc")
+							.transition()
+								.attrTween("d", makeArcAngleChangeTween(
+									priorArcDatum.startAngle, priorArcDatum.endAngle,
+									d.startAngle, d.endAngle,
+									weightingArc()
+								))
+						arcGroup
+							.select("path.score-arc")
+							.transition()
+								.attrTween("d", makeArcAngleChangeTween(
+									priorArcDatum.startAngle, priorArcDatum.endAngle,
+									d.startAngle, d.endAngle,
+									scoresArc()
+								))
 					}
 					else {
 						// wat do here?? need to test if this case is safe to
-						// ignore and expect to be caught by .exit() elsewhere
+						// ignore and expect to be caught by .entry() elsewhere
 						console.log("no prior arc datum found for mark chunk at idx " + i, this)
 					}
 				})
