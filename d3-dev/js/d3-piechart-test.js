@@ -231,8 +231,8 @@ function subjectDataDoublePieChart(identifier) {
 		return newMarkChunkGroups;
 	}
 
-	function defineUpdateTransitions(updateTransition) {
-		updateTransition.each(function() {
+	function defineUpdateTransitions(parentTransition) {
+		parentTransition.each(function() {
 			var updateTransitions = markChunkArcGroups.transition()
 			updateTransitions
 				.each(function(d, i) {
