@@ -82,6 +82,31 @@ var makeEarntLostData = function(subjectData) {
 	};
 }
 
+// comparator function for earnt/lost mark chunks that groups all the earnt and
+// lost chunks together
+function earntLostGroupingMarkChunkComparator(a, b) {
+	if (a.isEarntMarks) {
+		if (b.isEarntMarks) {
+			// order by index
+			return a.subjectIdx - b.subjectIdx
+		}
+		else {
+			// a should be first because it is earnt
+			return -1;
+		}
+	}
+	else {
+		if (b.isEarntMarks) {
+			// b should be first because it is earnt
+			return 1;
+		}
+		else {
+			// order by index
+			return a.subjectIdx - b.subjectIdx
+		}
+	}
+}
+
 // define arc drawing functions
 
 var weightingArc = function() {
@@ -169,28 +194,7 @@ function subjectDataDoublePieChart(identifier) {
 	});
 	if (groupingByEarntLost) {
 		// sort the data such that all the earnt marks come first
-		markChunkPieLayout.sort(function(a, b) {
-			if (a.isEarntMarks) {
-				if (b.isEarntMarks) {
-					// order by index
-					return a.subjectIdx - b.subjectIdx
-				}
-				else {
-					// a should be first because it is earnt
-					return -1;
-				}
-			}
-			else {
-				if (b.isEarntMarks) {
-					// b should be first because it is earnt
-					return 1;
-				}
-				else {
-					// order by index
-					return a.subjectIdx - b.subjectIdx
-				}
-			}
-		});
+		markChunkPieLayout.sort(earntLostGroupingMarkChunkComparator);
 	}
 	else {
 		// don't sort, show in subject order
