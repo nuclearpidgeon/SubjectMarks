@@ -1,0 +1,6 @@
+https://www.mathsisfun.com/data/grapher-equation.html
+
+y=(-a/(1+e^(-10(x-0.5))))+sin(x*2pi)*(abs(sin((x*2pi)/2))/(sin(0.25pi)))
+
+// logistic diagnostic
+y=(-a/(1+e^(-10(x-0.5))))
